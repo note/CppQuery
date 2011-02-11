@@ -37,7 +37,20 @@ class RealCase : public ::testing::Test{
 	CppQuery cq;
 };
 
-TEST_F(SimpleCase, Selectors){}
+TEST_F(SimpleCase, Selectors){
+	//:contains
+	EXPECT_STREQ("Lorem ipsum dolor ...", cq(":contains('dolor')").text().c_str());
+	EXPECT_EQ(2, cq(":contains('\"androids')").size());
+	EXPECT_EQ(1, cq("p:contains('\"androids')").size());
+	EXPECT_STREQ("Do \"androids dream ...", cq("p:contains('\"androids'").text().c_str());
+
+	//:has()
+	EXPECT_STREQ("second", cq("div:has(h1)")["id"].c_str());
+
+	// ">" selector
+	EXPECT_EQ(2, cq("body > div").size());
+	EXPECT_EQ(3, cq("body >").size());
+}
 
 TEST_F(SimpleCase, Problematic){
 	//if cq("selector")==1 then: cq("selector")[0] returns cq("selector"):
