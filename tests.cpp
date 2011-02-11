@@ -57,31 +57,33 @@ TEST_F(SimpleCase, Problematic){
 
 }
 
-// TEST_F(RealCase, Selectors){
-// 	//simple selector and ["attribute"] notation
-// 	EXPECT_STREQ("homepage", cq("logolink")["alt"]);
-// 
-// 	//nested selector and text()
-// 	EXPECT_STREQ("Quickstart", cq("#quickstart h1").text());
-// 
-// 	//alternative version of nested selector
-// 	EXPECT_STREQ("Quickstart", cq("quickstart")("h1").text());
-// 
-// 	//get n-th element with [n] notation
-// 	EXPECT_STREQ("quickstart", cq(".section")[2]["id"]);
-// 
-// 	//get number of elements with size()
-// 	EXPECT_EQ(6, cq(".section").size());
-// }
-// 
-// TEST_F(RealCase, Problematic){
-// 	//more problematic situations:
-// 	//out of range
-// 	EXPECT_EQ(NULL, cq(".section")[6].text());
-// 	
-// 
-// 	EXPECT_EQ(NULL, cq("#logolink")["nonexisting"]);
-// 	EXPECT_EQ(0, cq(".nonexisting").size());
-// 	EXPECT_EQ(0, cq(".nonexisting")("nonexisting2").size());
-// 	EXPECT_EQ(NULL, cq(".nonexisting").text());	
-// }
+TEST_F(RealCase, Selectors){
+	//simple selector and ["attribute"] notation
+	EXPECT_STREQ("homepage", cq("logolink")["alt"].c_str());
+
+	//nested selector and text()
+	EXPECT_STREQ("Quickstart", cq("#quickstart h1").text().c_str());
+
+	//alternative version of nested selector
+	EXPECT_STREQ("Quickstart", cq("quickstart")("h1").text().c_str());
+
+	//get n-th element with [n] notation
+	EXPECT_STREQ("quickstart", cq(".section")[2]["id"].c_str());
+
+	//get number of elements with size()
+	EXPECT_EQ(6, cq(".section").size());
+}
+
+TEST_F(RealCase, Problematic){
+	//more problematic situations:
+	//out of range, there is only 6 nodes with class "section"
+	string tmp = cq(".section")[6].text();
+	EXPECT_EQ(NULL, &tmp);
+	
+	tmp =  cq("#logolink")["nonexisting"];
+	EXPECT_EQ(NULL, &tmp);
+	EXPECT_EQ(0, cq(".nonexisting").size());
+	EXPECT_EQ(0, cq(".nonexisting")("nonexisting2").size());
+	tmp =  cq(".nonexisting").text();
+	EXPECT_EQ(NULL, &tmp);	
+}
