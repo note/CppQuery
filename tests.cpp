@@ -7,13 +7,14 @@
 
 using namespace std;
 
-const string realFile = "pyquery.html";
-const string simpleFile = "simple.html";
+const string real_file = "pyquery.html";
+const string simple_file = "simple.html";
+const string open_tags_file = "open_tags.html";
 
-class SimpleCase : public ::testing::Test{
+class CppQueryTest : public ::testing::Test{
 	public:
-	SimpleCase(){
-		ifstream s(simpleFile.c_str());
+	CppQueryTest(const string &fileName){
+		ifstream s(fileName.c_str());
 		stringstream ss;
 		ss << s.rdbuf();
 		html = ss.str();
@@ -25,19 +26,20 @@ class SimpleCase : public ::testing::Test{
 	CppQuery cq;
 };
 
-class RealCase : public ::testing::Test{
+class SimpleCase : public CppQueryTest{
 	public:
-	RealCase(){
-		ifstream s(realFile.c_str());
-		stringstream ss;
-		ss << s.rdbuf();
-		html = ss.str();
-	}
-	
-	protected:
-	string html;
-	CppQuery cq;
+	SimpleCase() : CppQueryTest(simple_file) {}
 };
+
+class RealCase : public CppQueryTest{
+	public:
+	RealCase() : CppQueryTest(real_file){}
+};
+
+class OpenTagsCase : public CppQueryTest{
+	public:
+	OpenTagsCase() : CppQueryTest(open_tags_file){}
+}
 
 TEST_F(SimpleCase, Selectors){
 	//should return 5 because one paragraph is inside comment
@@ -117,4 +119,16 @@ TEST_F(RealCase, Problematic){
 	EXPECT_EQ(0, cq(".nonexisting")("nonexisting2").size());
 	tmp =  cq(".nonexisting").text();
 	EXPECT_EQ(NULL, &tmp);	
+}
+
+TEST_F(OpenTagsCase, OpenTags){
+	//checks if deals with: <img id="logo" src="some.gif" />
+	EXPECT_STREQ("", cq("#logo").text().c_str());
+	EXPECT_STREQ("some.gif", cq("#logo")["src"].c_str());
+	
+	//checks if deals with: <p>some paragraph
+	EXPECT_STREQ("some paragraph", cq("p")[0].text().c_str());
+
+	//checks if deals with: <li>First
+	EXPECT_STREQ("first", cq("li")[0].text().c_str());
 }
