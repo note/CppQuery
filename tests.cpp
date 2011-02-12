@@ -1,3 +1,5 @@
+// vim: set fileencoding=utf-8 :
+// vim: set encoding=utf-8 :
 #include <gtest/gtest.h>
 #include "CppQuery.h"
 #include <sstream>
@@ -38,6 +40,10 @@ class RealCase : public ::testing::Test{
 };
 
 TEST_F(SimpleCase, Selectors){
+	//should return 5 because one paragraph is inside comment
+	EXPECT_EQ(5, cq("p").size());
+	EXPECT_EQ(5, cq("P").size());
+	
 	//:contains
 	EXPECT_STREQ("Lorem ipsum dolor ...", cq(":contains('dolor')").text().c_str());
 	EXPECT_EQ(2, cq(":contains('\"androids')").size());
@@ -53,6 +59,18 @@ TEST_F(SimpleCase, Selectors){
 }
 
 TEST_F(SimpleCase, Problematic){
+	EXPECT_STREQ("Lorem ipsum dolor ...Second paragraph ...", cq("#first p").text().c_str()); //check how it deals when text() is called on object containing a few nodes (should concatenate)
+	
+	EXPECT_STREQ("zażółć", cq("#find-me").text().c_str()); //checks if deals with: <h3   id="find-me"  >zażółć/h3   >
+	EXPECT_STREQ("class-name", cq("#attr")["class"].c_str()); //checks if deals with: <h3 id="attr" class='class-name'>Another</h3>
+	
+	//check if deals with: <input type="checkbox" id="chbox" name="team" value="team" checked>Spurs
+	//it's important that it returns empty string ("") to distinguish between situation when "checked" is not on attributes list - then it returns NULL
+	EXPECT_STREQ("", cq("#chbox")["checked"].c_str());
+
+	//checks if deals with: <h3 id='no-quote'  class=no-quote>Just another</h3>
+	EXPECT_STREQ("no_quote", cq("#no-quote")["class"].c_str());
+
 	//if cq("selector")==1 then: cq("selector")[0] returns cq("selector"):
 	EXPECT_STREQ("special", cq("#first")["class"].c_str());
 	EXPECT_STREQ("special", cq("#first")[0]["class"].c_str());
