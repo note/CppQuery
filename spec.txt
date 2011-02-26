@@ -1,0 +1,74 @@
+http://packages.python.org/pyquery/
+my goal so far  is just parsing (so no modifications will be possible)
+
+read carefully HTML5, XML and XHTML specs
+few parsing modes (eg. XML, HTML-strict (no parse errors), HTML-tolerant)
+first thing that will be implemented will be tolerant mode, next modes may be
+added later.
+tagsoup?
+innerHTML?
+
+tools:
+gtest, CMake, boost (spirit+Phoenix, smart_pointers), pimpl(?), github,
+doxygen, vim tricks
+
+----
+c_query q = new CppQuery(html_string);
+c_query links = q("a");
+c_query special_links = links(".special");
+cout << links[0].text() << endl;
+
+gives the same result as:
+
+c_query q = new CppQuery(html_string);
+c_query special_links = q("a.special");
+cout << links[0].text() << endl;
+
+----
+access to attributes:
+cout << q["href"] << endl;
+
+if(q["href"] == "google")
+
+----
+selectors: (see: http://api.jquery.com/category/selectors/)
+* (will be useful?)
+>  - Selects all direct child elements
+#
+:contains()
+:has()
+
+----
+Problematic situations:
+If there was no node that satisfies selector then NullCppQuery object is
+returned to prevent from errors in expression like that:
+q["#non-existing-id"]["attr"]
+q["#non-existing=id"] returns NullCppQuery. Methods that return primitives
+(strings when talking in terms of CppQuery) return NULL when called on objects
+of class NullCppQuery.
+
+if q["#id"].size() == 1: q["#id"][0] <=> q["#id"]
+
+----
+what about characters encoding
+
+----
+html entities
+
+
+----
+Probably parser will ignore DOCTYPE, it can be useful only after adding some
+parsing modes
+
+4 ways of specifing attributes: empty attribute, unquoted, single-quoted and
+double-quoted.
+If there are two attributes with the same names then CppQuery assumes that the
+that value of first should be returned
+
+----
+CONVENTIONS:
+variables: some_variable
+types: SomeType
+parametrizing types: template <typename SomeType>
+references and pointers: Type &variable, Type *variable
+functions/methods: do_something()

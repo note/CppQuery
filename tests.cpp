@@ -45,6 +45,9 @@ TEST_F(SimpleCase, Selectors){
 	//should return 5 because one paragraph is inside comment
 	EXPECT_EQ(5, cq("p").size());
 	EXPECT_EQ(5, cq("P").size());
+
+	//checks if deals with: <p class="some">Next <b>paragraph</b></p>
+	EXPECT_STREQ("Next paragraph", cq("p")[1].text());
 	
 	//:contains
 	EXPECT_STREQ("Lorem ipsum dolor ...", cq(":contains('dolor')").text().c_str());
