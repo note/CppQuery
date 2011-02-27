@@ -23,3 +23,4 @@ print(html("#first").attr("class"))
 print(html("#first").eq(0).attr("class"))
 
 print(html(".some").eq(1).text())
+print(len(html("h4")))
