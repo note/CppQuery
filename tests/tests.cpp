@@ -23,7 +23,7 @@ class CppQueryTest : public ::testing::Test{
 
 	protected:
 	string html;
-	CppQuery cq;
+	CppQuery::Query cq;
 };
 
 class SimpleCase : public CppQueryTest{
@@ -93,10 +93,10 @@ TEST_F(SimpleCase, Problematic){
 	//copy constructor
 	cq = cq("#first");
 	EXPECT_EQ(2, cq("p").size());
-	CppQuery cq2(cq);
+	CppQuery::Query cq2(cq);
 	EXPECT_EQ(2, cq2("p").size());
 
-	CppQuery cq3;
+	CppQuery::Query cq3;
 	//operator = ()
 	cq3 = cq2;
 	EXPECT_EQ(2, cq3("p").size());
