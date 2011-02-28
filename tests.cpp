@@ -45,15 +45,12 @@ TEST_F(SimpleCase, Selectors){
 	//should return 5 because one paragraph is inside comment
 	EXPECT_EQ(5, cq("p").size());
 	EXPECT_EQ(5, cq("P").size());
-
-	//checks if deals with: <p class="some">Next <b>paragraph</b></p>
-	EXPECT_STREQ("Next paragraph", cq("p")[1].text());
 	
 	//:contains
-	EXPECT_STREQ("Lorem ipsum dolor ...", cq(":contains('dolor')").text().c_str());
-	EXPECT_EQ(2, cq(":contains('\"androids')").size());
-	EXPECT_EQ(1, cq("p:contains('\"androids')").size());
-	EXPECT_STREQ("Do \"androids dream ...", cq("p:contains('\"androids'").text().c_str());
+	EXPECT_STREQ("Lorem ipsum dolor ...", cq(":contains(dolor)").text().c_str());
+	EXPECT_EQ(2, cq(":contains(\"androids)").size());
+	EXPECT_EQ(1, cq("p:contains(\"androids)").size());
+	EXPECT_STREQ("Do \"androids dream ...", cq("p:contains(\"androids").text().c_str());
 
 	//:has()
 	EXPECT_STREQ("second", cq("div:has(h1)")["id"].c_str());
@@ -61,9 +58,22 @@ TEST_F(SimpleCase, Selectors){
 	// ">" selector
 	EXPECT_EQ(2, cq("body > div").size());
 	EXPECT_EQ(3, cq("body >").size());
+
+	// descendant selector
+	EXPECT_EQ(3, cq("#second p").size());
+
+	//attribute equals selector [name="value"]
+	EXPECT_STREQ("chbox", cq("[name=team]"));
+
+	//more complex examples:
+	EXPECT_STREQ("second", cq("div:has(p:has(b))"));
+	EXPECT_EQ(0, cq("div:has(p:has(u))"));
 }
 
 TEST_F(SimpleCase, Problematic){
+	//checks if deals with: <p class="some">Next <b>paragraph</b></p>
+	EXPECT_STREQ("Next paragraph", cq("p")[1].text());
+	
 	EXPECT_STREQ("Lorem ipsum dolor ...Second paragraph ...", cq("#first p").text().c_str()); //check how it deals when text() is called on object containing a few nodes (should concatenate)
 	
 	EXPECT_STREQ("zażółć", cq("#find-me").text().c_str()); //checks if deals with: <h3   id="find-me"  >zażółć/h3   >

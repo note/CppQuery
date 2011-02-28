@@ -72,3 +72,12 @@ types: SomeType
 parametrizing types: template <typename SomeType>
 references and pointers: Type &variable, Type *variable
 functions/methods: do_something()
+
+
+Supported selectors:
+*descendant selector("ancestor descendandt")
+*element selector ("element")
+*:contains()
+*:has()
+*child selector ("parent > child")
+*class and id ("." and "#")
