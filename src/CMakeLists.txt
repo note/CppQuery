@@ -1,1 +1,1 @@
-add_library(CppQuery QueryImpl.cpp CppQuery.cpp)
+add_library(CppQuery Node.cpp QueryImpl.cpp CppQuery.cpp)
