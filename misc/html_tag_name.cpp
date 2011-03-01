@@ -79,7 +79,7 @@ struct Creator{
 void test_html(std::string &in, HtmlAttr &res){
 	using namespace std;
 	using spirit::ascii::space;
-	HtmlRule html;
+	//HtmlRule html;
 	HtmlAttributeRule attribute;
  	HtmlTagRule start_tag, start_end_tag;
 	HtmlEndTagRule end_tag;
@@ -91,7 +91,7 @@ void test_html(std::string &in, HtmlAttr &res){
 	start_end_tag = no_skip['<' >> +(alnum)] >> *(attribute) >> lit("/>");
 	end_tag = no_skip[lit("</") >> +(alnum)] >> '>';
 
-	html = *(omit[*(char_-'<')] >> (start_tag[bind(&Creator::handle_start_tag, &creator, _1)] | end_tag[bind(&Creator::handle_end_tag, &creator, _1)] | start_end_tag[bind(&Creator::handle_start_end_tag, &creator, _1)]));
+	HtmlRule html = *(omit[*(char_-'<')] >> (start_tag[bind(&Creator::handle_start_tag, &creator, _1)] | end_tag[bind(&Creator::handle_end_tag, &creator, _1)] | start_end_tag[bind(&Creator::handle_start_end_tag, &creator, _1)]));
 //	html = *(omit[*(char_-'<')] >> (start_end_tag[bind(&Creator::handle_start_end_tag, &creator, _1)]));
 	//html = *(omit[*(char_-'<')] >> end_tag);
 //	html = *(omit[*(char_-'<')] >> '<' >> (+(char_-'>'))[&handle_start_tag2] >> '>');
