@@ -1,3 +1,6 @@
+#ifndef CPP_QUERY_QUERY_H
+#define CPP_QUERY_QUERY_H
+
 #include <string>
 
 namespace CppQuery{
@@ -17,3 +20,5 @@ namespace CppQuery{
 		QueryImpl * pimpl;
 	};
 }
+
+#endif //CPP_QUERY_QUERY_H

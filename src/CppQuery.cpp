@@ -1,4 +1,4 @@
-#include "CppQuery.h"
+#include "../CppQuery.h"
 #include "QueryImpl.h"
 
 using namespace CppQuery;

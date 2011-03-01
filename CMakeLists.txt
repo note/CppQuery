@@ -5,7 +5,8 @@ set (VERSION 0.1)
 
 set(CppQueryTest_SRCS test.cpp)
 
-add_library(CppQuery QueryImpl.cpp CppQuery.cpp)
+include_directories ("${PROJECT_SOURCE_DIR}/src") 
+add_subdirectory (src)
 set(EXTRA_LIBS ${EXTRA_LIBS} CppQuery)
 
 add_executable (CppQueryTest ${CppQueryTest_SRCS})
