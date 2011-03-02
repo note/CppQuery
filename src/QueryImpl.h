@@ -25,14 +25,25 @@ namespace CppQuery{
 	
 		public:
 		QueryImpl(const std::string &html);
+		std::string text();
+		std::string get_attribute(const std::string &attribute);
+		bool attr_exists(const std::string &attribute);
+		QueryImpl * get_ith(int index);
+		QueryImpl * select(const std::string &selector);
+		int size(){
+			return roots.size();
+		}
 
 		private:
-		NodePtr root;
+		QueryImpl(){} // do not use it in client code. Useful when creating empty object.
+		QueryImpl(std::vector<NodePtr> elements) : roots(elements){} //do not use it in client code. Useful when creating object in methods select and get_ith
 		std::stack<NodePtr> open_tags;
+		std::vector<NodePtr> roots;
 		
 		void handle_start_tag(HtmlStartTagAttr &tag);
 		void handle_start_end_tag(HtmlStartTagAttr &tag);
 		void handle_end_tag(const std::string &tag);
+		void handle_text(const std::string &text);
 	};
 }
 

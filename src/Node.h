@@ -24,14 +24,30 @@ namespace CppQuery{
 		    
 		Node(HtmlStartTagAttr &tag);
 		
-		void addChild(NodePtr child){
-		    children.push_back(child);
+		NodePtr get_shared_ptr(){
+			return ptr;
 		}
+
+		void addChild(NodePtr child){
+			children.push_back(child);
+		}
+
+		void appendText(const std::string &txt){
+			text += txt;
+		}
+
+		std::string get_text(){
+			return text;
+		}
+
+		std::string get_attribute(const std::string &attribute);
+		bool attr_exists(const std::string &attribute);
 		
-		std::vector<NodePtr> select_by_tag_name(const std::string &tag_name);
-		std::vector<NodePtr> select_by_attribute(const std::string &attribute_name, const std::string &attribute_value);
+		void select_by_tag_name(const std::string &tag_name, std::vector<NodePtr> &v);
+		void select_by_attribute(const std::string &attribute_name, const std::string &attribute_value, std::vector<NodePtr> &v);
 
 		private:
+		NodePtr ptr;
 		std::string element_name;
 		std::map<std::string, std::string> attributes;
 		std::string text;

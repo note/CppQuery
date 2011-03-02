@@ -81,3 +81,4 @@ Supported selectors:
 *:has()
 *child selector ("parent > child")
 *class and id ("." and "#")
+*:not()

@@ -10,14 +10,16 @@ namespace CppQuery{
 		Query(const std::string &html);
 		~Query();
 
-		std::string text() const{}
-		std::string operator [] (const std::string &attr) const {}
-		Query operator [] (int) const {}
-		Query operator () (const std::string &selector) const {}
-		int size() const {}
+		std::string text() const;
+		std::string operator [] (const std::string &attr) const;
+		bool attr_exists(const std::string &attr) const;
+		Query operator [] (int) const;
+		Query operator () (const std::string &selector) const;
+		int size() const;
 
 		private:
-		QueryImpl * pimpl;
+		Query(QueryImpl *); //do not use it in client code
+		QueryImpl *pimpl;
 	};
 }
 

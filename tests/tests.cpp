@@ -80,8 +80,9 @@ TEST_F(SimpleCase, Problematic){
 	EXPECT_STREQ("class-name", cq("#attr")["class"].c_str()); //checks if deals with: <h3 id="attr" class='class-name'>Another</h3>
 	
 	//check if deals with: <input type="checkbox" id="chbox" name="team" value="team" checked>Spurs
-	//it's important that it returns empty string ("") to distinguish between situation when "checked" is not on attributes list - then it returns NULL
-	EXPECT_STREQ("", cq("#chbox")["checked"].c_str());
+	//to distinguish between situations when "checked" is not on attributes list and is on it but empty - use attr_exists()
+	EXPECT_TRUE(cq("#chbox")["checked"].empty());
+	EXPECT_TRUE(cq("#chbox").attr_exists("checked"));
 
 	//checks if deals with: <h3 id='no-quote'  class=no-quote>Just another</h3>
 	EXPECT_STREQ("no_quote", cq("#no-quote")["class"].c_str());
@@ -127,11 +128,12 @@ TEST_F(RealCase, Problematic){
 	EXPECT_EQ(NULL, &tmp);
 	
 	tmp =  cq("#logolink")["nonexisting"];
-	EXPECT_EQ(NULL, &tmp);
+	EXPECT_TRUE(tmp.empty());
+	EXPECT_FALSE(cq("#logolink").attr_exists("nonexisting"));
 	EXPECT_EQ(0, cq(".nonexisting").size());
 	EXPECT_EQ(0, cq(".nonexisting")("nonexisting2").size());
 	tmp =  cq(".nonexisting").text();
-	EXPECT_EQ(NULL, &tmp);	
+	EXPECT_TRUE(tmp.empty());
 }
 
 TEST_F(OpenTagsCase, OpenTags){
