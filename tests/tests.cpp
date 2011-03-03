@@ -55,19 +55,35 @@ TEST_F(SimpleCase, Selectors){
 	//:has()
 	EXPECT_STREQ("second", cq("div:has(h1)")["id"].c_str());
 
+	// descendant selector
+	EXPECT_EQ(3, cq("#second p").size());
+	
+	/* there is html like that:
+	<div id="second">
+	<div id="third"></div></div>
+
+	cq("#second div")["id"] <-- This code should not return "second", should return "third"
+	*/
+	EXPECT_STREQ("third", cq("#second div")["id"].c_str());
+	
 	// ">" selector
 	EXPECT_EQ(2, cq("body > div").size());
 	EXPECT_EQ(3, cq("body >").size());
 
-	// descendant selector
-	EXPECT_EQ(3, cq("#second p").size());
+	//the same problem as with descendant selector
+	EXPECT_STREQ("third", cq("#second > div")["id"].c_str());
 
-	//attribute equals selector [name="value"]
+	//attribute equals selector [name=value]
 	EXPECT_STREQ("chbox", cq("[name=team]"));
 
+	//:not() selector
+	EXPECT_EQ(3, cq("p:not(.some)").size());
+	EXPECT_STREQ("Lorem ipsum dolor ...", cq("p:not(.some)")[0].text().c_str());
+
 	//more complex examples:
-	EXPECT_STREQ("second", cq("div:has(p:has(b))"));
-	EXPECT_EQ(0, cq("div:has(p:has(u))"));
+	EXPECT_EQ(1, cq("div:has(p:has(b))").size());
+	EXPECT_STREQ("first", cq("div:has(p:has(b))")["id"].c_str());
+	EXPECT_EQ(0, cq("div:has(p:has(u))").size());
 }
 
 TEST_F(SimpleCase, Problematic){

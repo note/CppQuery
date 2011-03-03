@@ -2,8 +2,6 @@
 #include <iostream>
 #include <boost/bind.hpp>
 
-#include <iostream> //just for tests purposes
-
 #include "QueryImpl.h"
 
 using namespace CppQuery;
@@ -19,27 +17,22 @@ QueryImpl::QueryImpl(const string &html){
 	using spirit::lit;
 	using boost::bind;
 	
-	//if html document that is being parsed is correct then it should have root element. To handle incorrect document correctly root is arbitrarily set.
-	//Then it should be ignored by query methods
-	//root = NodePtr(new Node());
-
 	HtmlAttributeRule attribute = +(char_-(char_('=') | '>' | '<')) >> '=' >> -(lit('\'') | '"')  >> *(char_-(lit('\'') | '"')) >> -(lit('\'') | '"');
  	HtmlStartTagRule start_tag = no_skip['<' >> +(alnum)] >> *(attribute) >> '>';
 	HtmlStartTagRule start_end_tag = no_skip['<' >> +(alnum)] >> *(attribute) >> lit("/>");
 	HtmlEndTagRule end_tag = no_skip[lit("</") >> +(alnum)] >> '>';
-HtmlEndTagRule text = +(char_-'<');
+HtmlEndTagRule text = no_skip[+(char_-'<')];
 	//HtmlRule html_rule = *((*(char_-'<'))[bind(&QueryImpl::handle_text, this, _1)] >> (start_tag[bind(&QueryImpl::handle_start_tag, this, _1)] | end_tag[bind(&QueryImpl::handle_text, this, _1)] | start_end_tag[bind(&QueryImpl::handle_start_end_tag, this, _1)]));
 	HtmlRule html_rule = *(-text[bind(&QueryImpl::handle_text, this, _1)] >> (start_tag[bind(&QueryImpl::handle_start_tag, this, _1)] | end_tag[bind(&QueryImpl::handle_end_tag, this, _1)] | start_end_tag[bind(&QueryImpl::handle_start_end_tag, this, _1)]));
 	
-//	open_tags.push(root);
 	string::const_iterator begin = html.begin(), end = html.end();
 	spirit::qi::phrase_parse(begin, end, html_rule, space);
 }
 
 
+
 std::string QueryImpl::text(){
 	string res;
-	std::cout << "tu" << std::endl;
 	for(int i = 0; i < roots.size(); ++i)
 		res += roots[i]->get_text();
 	return res;
@@ -71,10 +64,9 @@ QueryImpl * QueryImpl::get_ith(int index){
 
 QueryImpl * QueryImpl::select(const std::string &selector){
 	vector<NodePtr> selected;
-	std::cout << "SELECT" << std::endl;
 	for(int i = 0; i<roots.size(); ++i)
 		roots[i]->select_by_tag_name(selector, selected);
-	std::cout << "SELECT2" << std::endl;
+	
 	return new QueryImpl(selected);
 }
 

@@ -79,6 +79,7 @@ Supported selectors:
 *element selector ("element")
 *:contains()
 *:has()
+*attribute equals selector ("[name=value"])
 *child selector ("parent > child")
 *class and id ("." and "#")
 *:not()

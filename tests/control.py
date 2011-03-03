@@ -22,5 +22,9 @@ print(html("a").text())
 print(html("#first").attr("class"))
 print(html("#first").eq(0).attr("class"))
 
+print('--"#second div"')
+print(html("#second div").attr("id"))
+print(html("p:not(.some)").text())
+
 print(html(".some").eq(1).text())
 print(len(html("h4")))
