@@ -24,7 +24,7 @@ namespace CppQuery{
 		public:
 		Node(){}
 		    
-		Node(HtmlStartTagAttr &tag);
+		explicit Node(HtmlStartTagAttr &tag);
 		
 		NodePtr get_shared_ptr(){
 			return ptr;

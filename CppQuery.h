@@ -8,7 +8,7 @@ namespace CppQuery{
 	template<typename Str>
 	class Query{
 		public:
-		Query(const Str &html);
+		explicit Query(const Str &html);
 		~Query();
 
 		Str text() const;

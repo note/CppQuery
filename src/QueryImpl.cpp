@@ -12,15 +12,16 @@ extern template class Node<wstring>;
 
 template <typename Str>
 QueryImpl<Str>::QueryImpl(const Str &html){
-	using spirit::ascii::alpha;
-	using spirit::ascii::alnum;
-	using spirit::ascii::char_;
-	using spirit::ascii::space;
+	using spirit::standard_wide::alpha;
+	using spirit::standard_wide::alnum;
+	using spirit::standard_wide::char_;
+	using spirit::standard_wide::space;
 	using spirit::no_skip;
 	using spirit::omit;
 	using spirit::lit;
 	using boost::bind;
 	
+
 	HtmlAttributeRule attribute = +(char_-(char_('=') | '>' | '<')) >> '=' >> -(lit('\'') | '"')  >> *(char_-(lit('\'') | '"')) >> -(lit('\'') | '"');
  	HtmlStartTagRule start_tag = no_skip['<' >> +(alnum)] >> *(attribute) >> '>';
 	HtmlStartTagRule start_end_tag = no_skip['<' >> +(alnum)] >> *(attribute) >> lit("/>");

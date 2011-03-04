@@ -20,13 +20,13 @@ namespace CppQuery{
 		typedef boost::shared_ptr<Node<Str> > NodePtr;
 
 		typedef fusion::vector<Str, std::vector<fusion::vector<Str, Str> > > HtmlStartTagAttr; //each start tag consists of tag name and some number of pairs <attribute-name, attribute-value>
-		typedef spirit::qi::rule<typename Str::const_iterator, fusion::vector<Str, Str>(), spirit::ascii::space_type> HtmlAttributeRule;
-		typedef spirit::qi::rule<typename Str::const_iterator, HtmlStartTagAttr(), spirit::ascii::space_type> HtmlStartTagRule;
-		typedef spirit::qi::rule<typename Str::const_iterator, Str(), spirit::ascii::space_type> HtmlEndTagRule;
-		typedef spirit::qi::rule<typename Str::const_iterator, spirit::ascii::space_type> HtmlRule;
+		typedef spirit::qi::rule<typename Str::const_iterator, fusion::vector<Str, Str>(), spirit::standard_wide::space_type> HtmlAttributeRule;
+		typedef spirit::qi::rule<typename Str::const_iterator, HtmlStartTagAttr(), spirit::standard_wide::space_type> HtmlStartTagRule;
+		typedef spirit::qi::rule<typename Str::const_iterator, Str(), spirit::standard_wide::space_type> HtmlEndTagRule;
+		typedef spirit::qi::rule<typename Str::const_iterator, spirit::standard_wide::space_type> HtmlRule;
 	
 		public:
-		QueryImpl(const Str &html);
+		explicit QueryImpl(const Str &html);
 		Str text();
 		Str get_attribute(const Str &attribute);
 		bool attr_exists(const Str &attribute);

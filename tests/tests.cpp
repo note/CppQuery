@@ -84,6 +84,15 @@ TEST_F(SimpleCase, Selectors){
 	EXPECT_EQ(1, cq("div:has(p:has(b))").size());
 	EXPECT_STREQ("first", cq("div:has(p:has(b))")["id"].c_str());
 	EXPECT_EQ(0, cq("div:has(p:has(u))").size());
+
+
+	//utf-8
+	CppQuery<wstring>::Query q(html);
+	EXPECT_STREQ("zażółć", q("#find-me").text().c_str()); //checks if deals with: <h3   id="find-me"  >zażółć/h3   >
+	EXPECT_EQ(6, q("#find-me").text().size());
+	EXPECT_EQ(1, q(":contains(zażółć").size());
+	EXPECT_STREQ("find-me", q(":contains(zażółć)")["id"]c_str());
+
 }
 
 TEST_F(SimpleCase, Problematic){
@@ -92,7 +101,6 @@ TEST_F(SimpleCase, Problematic){
 	
 	EXPECT_STREQ("Lorem ipsum dolor ...Second paragraph ...", cq("#first p").text().c_str()); //check how it deals when text() is called on object containing a few nodes (should concatenate)
 	
-	EXPECT_STREQ("zażółć", cq("#find-me").text().c_str()); //checks if deals with: <h3   id="find-me"  >zażółć/h3   >
 	EXPECT_STREQ("class-name", cq("#attr")["class"].c_str()); //checks if deals with: <h3 id="attr" class='class-name'>Another</h3>
 	
 	//check if deals with: <input type="checkbox" id="chbox" name="team" value="team" checked>Spurs
