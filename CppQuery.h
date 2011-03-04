@@ -1,25 +1,26 @@
 #ifndef CPP_QUERY_QUERY_H
 #define CPP_QUERY_QUERY_H
 
-#include <string>
-
 namespace CppQuery{
+	template<typename Str>
 	class QueryImpl;
+	
+	template<typename Str>
 	class Query{
 		public:
-		Query(const std::string &html);
+		Query(const Str &html);
 		~Query();
 
-		std::string text() const;
-		std::string operator [] (const std::string &attr) const;
-		bool attr_exists(const std::string &attr) const;
+		Str text() const;
+		Str operator [] (const Str &attr) const;
+		bool attr_exists(const Str &attr) const;
 		Query operator [] (int) const;
-		Query operator () (const std::string &selector) const;
+		Query operator () (const Str &selector) const;
 		int size() const;
 
 		private:
-		Query(QueryImpl *); //do not use it in client code
-		QueryImpl *pimpl;
+		Query(QueryImpl<Str> *); //do not use it in client code
+		QueryImpl<Str> *pimpl;
 	};
 }
 

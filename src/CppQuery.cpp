@@ -4,36 +4,51 @@
 using namespace CppQuery;
 using namespace std;
 
-Query::Query(const string &html){
-	pimpl = new QueryImpl(html);
+extern template class QueryImpl<string>;
+extern template class QueryImpl<wstring>;
+
+template <typename Str>
+Query<Str>::Query(const Str &html){
+	pimpl = new QueryImpl<Str>(html);
 }
 
-Query::Query(QueryImpl * impl) : pimpl(impl){}
+template <typename Str>
+Query<Str>::Query(QueryImpl<Str> * impl) : pimpl(impl){}
 
-Query::~Query(){
+template <typename Str>
+Query<Str>::~Query(){
 	delete pimpl;
 }
 
-string Query::text() const {
+template <typename Str>
+Str Query<Str>::text() const {
 	return pimpl->text();
 }
 
-string Query::operator [](const string &attr) const {
+template <typename Str>
+Str Query<Str>::operator [](const Str &attr) const {
 	return pimpl->get_attribute(attr);
 }
 
-bool Query::attr_exists(const string &attr) const {
+template <typename Str>
+bool Query<Str>::attr_exists(const Str &attr) const {
 	return pimpl->attr_exists(attr);
 }
 
-Query Query::operator [](int index) const {
+template <typename Str>
+Query<Str> Query<Str>::operator [](int index) const {
 	return Query(pimpl->get_ith(index));
 }
 		
-Query Query::operator () (const string &selector) const {
+template <typename Str>
+Query<Str> Query<Str>::operator () (const Str &selector) const {
 	return Query(pimpl->select(selector));
 }
 
-int Query::size() const {
+template <typename Str>
+int Query<Str>::size() const {
 	return pimpl->size();
 }
+
+template class CppQuery::Query<string>;
+template class CppQuery::Query<wstring>;
