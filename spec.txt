@@ -83,3 +83,11 @@ Supported selectors:
 *child selector ("parent > child")
 *class and id ("." and "#")
 *:not()
+
+We can divide those selectors into two categories:
+1. Narrowing selectors - those which results are among already selected
+elements.
+2. Other
+
+1. :contains(), :has(), [name=val], ",", "."
+2. descendandt selector, ;not(), child selector(">")

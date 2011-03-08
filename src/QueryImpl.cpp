@@ -12,26 +12,26 @@ extern template class Node<wstring>;
 
 template <typename Str>
 QueryImpl<Str>::QueryImpl(const Str &html){
-	using spirit::standard_wide::alpha;
-	using spirit::standard_wide::alnum;
-	using spirit::standard_wide::char_;
-	using spirit::standard_wide::space;
+// 	using alpha;
+// 	using Chars<Str>::alnum;
+// 	using Chars<Str>::char_;
+// 	using Chars<Str>::space;
 	using spirit::no_skip;
 	using spirit::omit;
 	using spirit::lit;
 	using boost::bind;
 	
 
-	HtmlAttributeRule attribute = +(char_-(char_('=') | '>' | '<')) >> '=' >> -(lit('\'') | '"')  >> *(char_-(lit('\'') | '"')) >> -(lit('\'') | '"');
- 	HtmlStartTagRule start_tag = no_skip['<' >> +(alnum)] >> *(attribute) >> '>';
-	HtmlStartTagRule start_end_tag = no_skip['<' >> +(alnum)] >> *(attribute) >> lit("/>");
-	HtmlEndTagRule end_tag = no_skip[lit("</") >> +(alnum)] >> '>';
-HtmlEndTagRule text = no_skip[+(char_-'<')];
+	HtmlAttributeRule attribute = +(Chars<Str>::char_-(Chars<Str>::char_('=') | '>' | '<')) >> '=' >> -(lit('\'') | '"')  >> *(Chars<Str>::char_-(lit('\'') | '"')) >> -(lit('\'') | '"');
+ 	HtmlStartTagRule start_tag = no_skip['<' >> +(Chars<Str>::alnum)] >> *(attribute) >> '>';
+	HtmlStartTagRule start_end_tag = no_skip['<' >> +(Chars<Str>::alnum)] >> *(attribute) >> lit("/>");
+	HtmlEndTagRule end_tag = no_skip[lit("</") >> +(Chars<Str>::alnum)] >> '>';
+	HtmlEndTagRule text = no_skip[+(Chars<Str>::char_-'<')];
 	//HtmlRule html_rule = *((*(char_-'<'))[bind(&QueryImpl::handle_text, this, _1)] >> (start_tag[bind(&QueryImpl::handle_start_tag, this, _1)] | end_tag[bind(&QueryImpl::handle_text, this, _1)] | start_end_tag[bind(&QueryImpl::handle_start_end_tag, this, _1)]));
 	HtmlRule html_rule = *(-text[bind(&QueryImpl::handle_text, this, _1)] >> (start_tag[bind(&QueryImpl::handle_start_tag, this, _1)] | end_tag[bind(&QueryImpl::handle_end_tag, this, _1)] | start_end_tag[bind(&QueryImpl::handle_start_end_tag, this, _1)]));
-	
+std::cout << " HERER" << std::endl;	
 	typename Str::const_iterator begin = html.begin(), end = html.end();
-	spirit::qi::phrase_parse(begin, end, html_rule, space);
+	spirit::qi::phrase_parse(begin, end, html_rule, Chars<Str>::space);
 }
 
 template<typename Str>
