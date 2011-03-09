@@ -9,6 +9,7 @@ namespace CppQuery{
 	class Query{
 		public:
 		explicit Query(const Str &html);
+		Query(){}
 		~Query();
 
 		Str text() const;

@@ -61,7 +61,7 @@ namespace CppQuery{
 		typedef spirit::qi::rule<typename Str::const_iterator, HtmlStartTagAttr(), typename CharsTypes<Str>::space_type> HtmlStartTagRule;
 		typedef spirit::qi::rule<typename Str::const_iterator, Str(), typename CharsTypes<Str>::space_type> HtmlEndTagRule;
 		typedef spirit::qi::rule<typename Str::const_iterator, typename CharsTypes<Str>::space_type> HtmlRule;
-		//typedef spirit::qi::rule<typename Str::const_iterator, spirit::staBasicSelector;
+		typedef spirit::qi::rule<typename Str::const_iterator, Str(), typename CharsTypes<Str>::space_type> BasicSelector;
 
 		public:
 		explicit QueryImpl(const Str &html);
@@ -70,6 +70,8 @@ namespace CppQuery{
 		bool attr_exists(const Str &attribute);
 		QueryImpl * get_ith(int index);
 		QueryImpl * select(const Str &selector);
+		//works analogically to select besides of the fact that ignore roots elements when searching
+		QueryImpl * search_inside(const Str &selector);
 		int size(){
 			return roots.size();
 		}

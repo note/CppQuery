@@ -89,5 +89,5 @@ We can divide those selectors into two categories:
 elements.
 2. Other
 
-1. :contains(), :has(), [name=val], ",", "."
+1. :contains(), :has(), [name=val], "#", "."
 2. descendandt selector, ;not(), child selector(">")

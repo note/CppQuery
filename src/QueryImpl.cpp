@@ -12,10 +12,6 @@ extern template class Node<wstring>;
 
 template <typename Str>
 QueryImpl<Str>::QueryImpl(const Str &html){
-// 	using alpha;
-// 	using Chars<Str>::alnum;
-// 	using Chars<Str>::char_;
-// 	using Chars<Str>::space;
 	using spirit::no_skip;
 	using spirit::omit;
 	using spirit::lit;
@@ -27,9 +23,8 @@ QueryImpl<Str>::QueryImpl(const Str &html){
 	HtmlStartTagRule start_end_tag = no_skip['<' >> +(Chars<Str>::alnum)] >> *(attribute) >> lit("/>");
 	HtmlEndTagRule end_tag = no_skip[lit("</") >> +(Chars<Str>::alnum)] >> '>';
 	HtmlEndTagRule text = no_skip[+(Chars<Str>::char_-'<')];
-	//HtmlRule html_rule = *((*(char_-'<'))[bind(&QueryImpl::handle_text, this, _1)] >> (start_tag[bind(&QueryImpl::handle_start_tag, this, _1)] | end_tag[bind(&QueryImpl::handle_text, this, _1)] | start_end_tag[bind(&QueryImpl::handle_start_end_tag, this, _1)]));
 	HtmlRule html_rule = *(-text[bind(&QueryImpl::handle_text, this, _1)] >> (start_tag[bind(&QueryImpl::handle_start_tag, this, _1)] | end_tag[bind(&QueryImpl::handle_end_tag, this, _1)] | start_end_tag[bind(&QueryImpl::handle_start_end_tag, this, _1)]));
-std::cout << " HERER" << std::endl;	
+
 	typename Str::const_iterator begin = html.begin(), end = html.end();
 	spirit::qi::phrase_parse(begin, end, html_rule, Chars<Str>::space);
 }
@@ -85,7 +80,7 @@ void QueryImpl<Str>::handle_start_tag(HtmlStartTagAttr &tag){
 	NodePtr new_element = new_element_ptr->get_shared_ptr();
 
 	if(open_tags.size())
-		open_tags.top()->addChild(new_element);
+		open_tags.top()->add_child(new_element);
 	else
 		roots.push_back(new_element);
 	
@@ -99,7 +94,7 @@ void QueryImpl<Str>::handle_start_end_tag(HtmlStartTagAttr &tag){
 	NodePtr new_element = new_element_ptr->get_shared_ptr();
 	
 	if(open_tags.size())
-		open_tags.top()->addChild(new_element);
+		open_tags.top()->add_child(new_element);
 	else
 		roots.push_back(new_element);
 }
@@ -115,7 +110,7 @@ template<typename Str>
 void QueryImpl<Str>::handle_text(const Str &text){
 	//std::cout << "TEXT" << text << std::endl;
 	if(open_tags.size())
-		open_tags.top()->appendText(text);
+		open_tags.top()->append_text(text);
 }
 
 template class QueryImpl<string>;
