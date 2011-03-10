@@ -68,7 +68,7 @@ template<typename Str>
 QueryImpl<Str> * QueryImpl<Str>::select(const Str &selector){
 	vector<NodePtr> selected;
 	for(int i = 0; i<roots.size(); ++i)
-		roots[i]->select_by_tag_name(selector, selected);
+		roots[i]->search_by_tag_name(selector, selected);
 	
 	return new QueryImpl(selected);
 }

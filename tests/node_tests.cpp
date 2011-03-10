@@ -36,13 +36,14 @@ class SelectorsTest : public ::testing::Test{
 		attr_val.push_back("special");
 		NodeS *p1 = new NodeS("p", attr_names, attr_val);
 		p1->append_text("czerwony");
-		NodeS *a1 = new NodeS("a", empty, empty), *a2 = new NodeS("a", make_v("href"), make_v("www"));
+		NodeS *a1 = new NodeS("a", empty, empty), *a2 = new NodeS("a", make_v("href"), make_v("www")), *a3 = new NodeS("a", empty, empty);
 		a1->append_text("zielony");
 		a2->append_text("niebieski");
 		
 		p1->add_child(a1->get_shared_ptr());
 		p1->add_child(a2->get_shared_ptr());
 		d2->add_child(p1->get_shared_ptr());
+		d2->add_child(a3->get_shared_ptr());
 	 
 		set_root(html->get_shared_ptr());
 	}
@@ -53,45 +54,45 @@ class SelectorsTest : public ::testing::Test{
 	NodePtr root;
 };
 
-TEST_F(SelectorsTest, select_by_tag_name){
+TEST_F(SelectorsTest, search_by_tag_name){
   	
   	std::vector<NodePtr> res;
- 	root->select_by_tag_name("html", res);
+ 	root->search_by_tag_name("html", res);
 	EXPECT_EQ(1, res.size());
  	res.clear();
 	
-	root->select_by_tag_name("html435", res);
+	root->search_by_tag_name("html435", res);
 	EXPECT_EQ(0, res.size());
 	res.clear();
 	
-	root->select_by_tag_name("div", res);
+	root->search_by_tag_name("div", res);
 	EXPECT_EQ(3, res.size());
 	res.clear();
 
 }
 
-TEST_F(SelectorsTest, select_by_attribute){
+TEST_F(SelectorsTest, search_by_attribute){
 	vector<NodePtr> res;
-	root->select_by_attribute("id", "p1", res);
+	root->search_by_attribute("id", "p1", res);
 	EXPECT_EQ(1, res.size());
 	if(res.size()>0)
 		EXPECT_STREQ("czerwony", res[0]->get_text().c_str());
 	res.clear();
 
-	root->select_by_attribute("href", "www2", res);
+	root->search_by_attribute("href", "www2", res);
 	EXPECT_EQ(0, res.size());
 	res.clear();
 
-	root->select_by_attribute("href", "www", res);
+	root->search_by_attribute("href", "www", res);
 	EXPECT_EQ(1, res.size());
 	if(res.size()>0)
 		EXPECT_STREQ("a", res[0]->get_tag_name().c_str());
 	res.clear();
 }
 
-TEST_F(SelectorsTest, select_with_text){
+TEST_F(SelectorsTest, search_with_text){
 	vector<NodePtr> res;
-	root->select_with_text("czerwony", res);
+	root->search_with_text("czerwony", res);
 	EXPECT_EQ(1, res.size());
 	EXPECT_STREQ("p1", res[0]->get_attribute("id").c_str());
 	res.clear();
@@ -108,7 +109,25 @@ TEST_F(SelectorsTest, search_inside_by_tag_name){
 	tmp[0]->search_inside_by_tag_name("div", res);
 	EXPECT_EQ(1, res.size());
 	EXPECT_STREQ("inner-div", res[0]->get_attribute("id").c_str());
+	res.clear();
+	tmp.clear();
+
+	root->search_by_tag_name("p", res);
+	if(res.size()>0){
+		res[0]->search_inside_by_tag_name("a", tmp);
+		EXPECT_EQ(2, tmp.size());
+	}
 }
+
+TEST_F(SelectorsTest, search_inside_by_attribute){
+
+}
+
+TEST_F(SelectorsTest, search_inside_with_text){
+	
+}
+
+TEST_F(SelectorsTest, 
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);

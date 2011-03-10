@@ -35,53 +35,53 @@ bool Node<Str>::attr_exists(const Str &attribute){
 }
 
 template<typename Str>
-void Node<Str>::select_by_tag_name(const Str &tag_name, vector<NodePtr> &v){
-	select_by_tag_name_(tag_name, v, false);
+void Node<Str>::search_by_tag_name(const Str &tag_name, vector<NodePtr> &v){
+	search_by_tag_name_(tag_name, v, false);
 }
 
 template<typename Str>
-void Node<Str>::select_by_attribute(const Str &attribute_name, const Str &attribute_value, vector<NodePtr> &v){
-	select_by_attribute_(attribute_name, attribute_value, v, false);
+void Node<Str>::search_by_attribute(const Str &attribute_name, const Str &attribute_value, vector<NodePtr> &v){
+	search_by_attribute_(attribute_name, attribute_value, v, false);
 }
 
 template<typename Str>
-void Node<Str>::select_with_text(const Str &txt, vector<NodePtr> &v){
-	select_with_text_(txt, v, false);
+void Node<Str>::search_with_text(const Str &txt, vector<NodePtr> &v){
+	search_with_text_(txt, v, false);
 }
 
 //search_inside* variants
 
 template<typename Str>
 void Node<Str>::search_inside_by_tag_name(const Str &txt, vector<NodePtr> &v){
-	select_by_tag_name_(txt, v, true);
+	search_by_tag_name_(txt, v, true);
 }
 
 template<typename Str>
 void Node<Str>::search_inside_by_attribute(const Str &attribute_name, const Str &attribute_value, vector<NodePtr> &v){
-	select_by_attribute_(attribute_name, attribute_value, v, true);
+	search_by_attribute_(attribute_name, attribute_value, v, true);
 }
 
 template<typename Str>
 void Node<Str>::search_inside_with_text(const Str &txt, vector<NodePtr> &v){
-	select_with_text_(txt, v, true);
+	search_with_text_(txt, v, true);
 }
 
-//actual implementation of select_by_tag_name, select_by_attribute and select_with_text
-//because select* and search_inside* variants differs only in the way they treat root element then each pair is implemented with one method:
+//actual implementation of search_by_tag_name, search_by_attribute and search_with_text
+//because search* and search_inside* variants differs only in the way they treat root element then each pair is implemented with one method:
 
 template<typename Str>
-void Node<Str>::select_by_tag_name_(const Str &tag_name, vector<NodePtr> &v, bool root){
+void Node<Str>::search_by_tag_name_(const Str &tag_name, vector<NodePtr> &v, bool root){
 	//pre-order traversing
 	if(!root)
 		if(element_name == tag_name)
 			v.push_back(ptr);
 			
 	for(int i = 0; i < children.size(); ++i)
-		children[i]->select_by_tag_name_(tag_name, v);
+		children[i]->search_by_tag_name_(tag_name, v);
 }
 
 template<typename Str>
-void Node<Str>::select_by_attribute_(const Str &attribute_name, const Str &attribute_value, vector<NodePtr> &v, bool root){
+void Node<Str>::search_by_attribute_(const Str &attribute_name, const Str &attribute_value, vector<NodePtr> &v, bool root){
 	//pre-order traversing
 	typename map<Str, Str>::iterator attr_it = attributes.find(attribute_name);
 	if(!root)
@@ -90,17 +90,17 @@ void Node<Str>::select_by_attribute_(const Str &attribute_name, const Str &attri
 				v.push_back(ptr);
 
 	for(int i = 0; i < children.size(); ++i)
-		children[i]->select_by_attribute_(attribute_name, attribute_value, v);
+		children[i]->search_by_attribute_(attribute_name, attribute_value, v);
 }
 
 template<typename Str>
-void Node<Str>::select_with_text_(const Str &txt, vector<NodePtr> &v, bool root){
+void Node<Str>::search_with_text_(const Str &txt, vector<NodePtr> &v, bool root){
 	if(!root)
 		if(text.find(txt) != Str::npos)
 			v.push_back(ptr);
 	
 	for(int i = 0; i < children.size(); ++i)
-		children[i]->select_with_text_(txt, v);
+		children[i]->search_with_text_(txt, v);
 }
 
 //see: http://www.parashift.com/c++-faq-lite/templates.html#faq-35.15

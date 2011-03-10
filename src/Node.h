@@ -56,14 +56,22 @@ namespace CppQuery{
 		bool attr_exists(const Str &attribute);
 		
 		//select methods:
-		void select_by_tag_name(const Str &tag_name, std::vector<NodePtr> &v);
-		void select_by_attribute(const Str &attribute_name, const Str &attribute_value, std::vector<NodePtr> &v);
-		void select_with_text(const Str &txt, std::vector<NodePtr> &v);
+		void search_by_tag_name(const Str &tag_name, std::vector<NodePtr> &v);
+		void search_by_attribute(const Str &attribute_name, const Str &attribute_value, std::vector<NodePtr> &v);
+		void search_with_text(const Str &txt, std::vector<NodePtr> &v);
 		
 		//search_inside* variants
 		void search_inside_by_tag_name(const Str &tag_name, std::vector<NodePtr> &v);
 		void search_inside_by_attribute(const Str &attribute_name, const Str &attribute_value, std::vector<NodePtr> &v);
 		void search_inside_with_text(const Str &text, std::vector<NodePtr> &v);
+		
+		void select_by_tag_name(const Str &tag_name, std::vector<NodePtr> &v);
+		void select_by_attribute(const Str &attribute_name, const Str &attribute_value, std::vector<NodePtr> &v);
+		void select_with_text(const Str &text, std::vector<NodePtr> &v);
+		
+		void search_among_children_by_tag_name(const Str &tag_name, std::vector<NodePtr> &v);
+		void search_among_children_by_attribute(const Str &attribute_name, const Str &attribute_value, std::vector<NodePtr> &v);
+		void search_among_children_with_text(const Str &text, std::vector<NodePtr> &v);
 		//end of select methods
 		
 		private:
@@ -74,9 +82,9 @@ namespace CppQuery{
 		std::vector<NodePtr> children; //boost::shared_ptr is safe because whole structure containing HTML will be a tree - so there will be no cycles in it
 
 		
-		void select_by_tag_name_(const Str &tag_name, std::vector<NodePtr> &v, bool root=false);
-		void select_by_attribute_(const Str &attribute_name, const Str &attribute_value, std::vector<NodePtr> &v, bool root=false);
-		void select_with_text_(const Str &txt, std::vector<NodePtr> &v, bool root=false);
+		void search_by_tag_name_(const Str &tag_name, std::vector<NodePtr> &v, bool root=false);
+		void search_by_attribute_(const Str &attribute_name, const Str &attribute_value, std::vector<NodePtr> &v, bool root=false);
+		void search_with_text_(const Str &txt, std::vector<NodePtr> &v, bool root=false);
 	};
 }
 
