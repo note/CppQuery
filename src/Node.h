@@ -36,6 +36,11 @@ namespace CppQuery{
 		//methods for constructing
 		void add_child(NodePtr child){
 			children.push_back(child);
+			child->add_parent(get_shared_ptr());
+		}
+
+		void add_parent(NodePtr parent_node){
+			parent = parent_node;
 		}
 
 		void append_text(const Str &txt){
@@ -53,6 +58,7 @@ namespace CppQuery{
 		}
 		//end of getters
 		
+		bool is_descendant_of(const NodePtr &potential_parent);
 		bool attr_exists(const Str &attribute);
 		
 		//select methods:
@@ -65,9 +71,9 @@ namespace CppQuery{
 		void search_inside_by_attribute(const Str &attribute_name, const Str &attribute_value, std::vector<NodePtr> &v);
 		void search_inside_with_text(const Str &text, std::vector<NodePtr> &v);
 		
-		void select_by_tag_name(const Str &tag_name, std::vector<NodePtr> &v);
-		void select_by_attribute(const Str &attribute_name, const Str &attribute_value, std::vector<NodePtr> &v);
-		void select_with_text(const Str &text, std::vector<NodePtr> &v);
+		bool has_tag_name(const Str &tag_name);
+		bool has_attribute_value(const Str &attribute_name, const Str &attribute_value);
+		bool has_text(const Str &text);
 		
 		void search_among_children_by_tag_name(const Str &tag_name, std::vector<NodePtr> &v);
 		void search_among_children_by_attribute(const Str &attribute_name, const Str &attribute_value, std::vector<NodePtr> &v);
@@ -79,12 +85,14 @@ namespace CppQuery{
 		Str element_name;
 		std::map<Str, Str> attributes;
 		Str text;
+		NodePtr parent;
 		std::vector<NodePtr> children; //boost::shared_ptr is safe because whole structure containing HTML will be a tree - so there will be no cycles in it
 
-		
-		void search_by_tag_name_(const Str &tag_name, std::vector<NodePtr> &v, bool root=false);
-		void search_by_attribute_(const Str &attribute_name, const Str &attribute_value, std::vector<NodePtr> &v, bool root=false);
-		void search_with_text_(const Str &txt, std::vector<NodePtr> &v, bool root=false);
+		//if deep is set to false then nodes that are at lower level than children are ignored.
+		//So eg. ignore_root=true and deep=false performs checks only for children
+		void search_by_tag_name_(const Str &tag_name, std::vector<NodePtr> &v, bool root=false, bool deep=true);
+		void search_by_attribute_(const Str &attribute_name, const Str &attribute_value, std::vector<NodePtr> &v, bool root=false, bool deep=true);
+		void search_with_text_(const Str &txt, std::vector<NodePtr> &v, bool root=false, bool deep=true);
 	};
 }
 

@@ -66,16 +66,41 @@ QueryImpl<Str> * QueryImpl<Str>::get_ith(int index){
 
 template<typename Str>
 QueryImpl<Str> * QueryImpl<Str>::select(const Str &selector){
-	vector<NodePtr> selected;
-	for(int i = 0; i<roots.size(); ++i)
-		roots[i]->search_by_tag_name(selector, selected);
+	reset();
+	//cout << "HERE" << endl;
+	//v.clear();
+	v = roots;
+	using spirit::qi::int_;
+	using spirit::lit;
+	using spirit::omit;
+	using spirit::no_skip;
+	using spirit::eps;
+
+using boost::bind;
+	typedef spirit::qi::rule<typename Str::const_iterator, Str, typename CharsTypes<Str>::space_type> BasicSelectorRule;
+	typedef spirit::qi::rule<typename Str::const_iterator, fusion::vector<Str, Str>(), typename CharsTypes<Str>::space_type> ParenthesisedOperator;
+	typedef spirit::qi::rule<typename Str::const_iterator> Symbol;
+	typedef spirit::qi::rule<typename Str::const_iterator, Str()> StdRule;
+	typedef spirit::qi::rule<typename Str::const_iterator, fusion::vector<Str, Str>()> AttributeRule;
+	Symbol special_chars = no_skip[lit('.') | '#' | ':'  | '[' | ' ' | '>'];
+	StdRule element = +(Chars<Str>::char_-special_chars);
+	StdRule class_ = lit('.') >> +(Chars<Str>::char_-special_chars);
+	StdRule id = '#' >> +(Chars<Str>::char_-special_chars) >> eps;
+	StdRule contains = ":contains(" >> +(Chars<Str>::char_-(special_chars | ')')) >> ')';
+	AttributeRule attr = '[' >> +(Chars<Str>::char_-(special_chars | '=')) >> '=' >> +(Chars<Str>::char_-']') >> ']';
 	
-	return new QueryImpl(selected);
+ 	StdRule pre_operator = +(class_[bind(&QueryImpl::handle_class, this, _1)] | id[bind(&QueryImpl::handle_id, this, _1)] | contains[bind(&QueryImpl::handle_contains, this, _1)] | attr[bind(&QueryImpl::handle_attr, this, _1)] | element[bind(&QueryImpl::handle_element, this, _1)] | lit(" > ")[bind(&QueryImpl::handle_child, this)] | (lit(' '))[bind(&QueryImpl::handle_descendant, this)]);
+ 	typename Str::const_iterator begin = selector.begin(), end = selector.end();
+	spirit::qi::parse(begin, end, pre_operator);
+
+
+
+	return new QueryImpl(v);
 }
 
 template<typename Str>
 void QueryImpl<Str>::handle_start_tag(HtmlStartTagAttr &tag){
-	//std::cout << "Beginning of tag: " << fusion::at_c<0>(tag) << std::endl;
+	//std::cout << "Beginning of tag: ";// << fusion::at_c<0>(tag) << std::endl;
 	Node<Str> *new_element_ptr = new Node<Str>(tag);
 	NodePtr new_element = new_element_ptr->get_shared_ptr();
 
@@ -108,10 +133,120 @@ void QueryImpl<Str>::handle_end_tag(const Str &tag){
 
 template<typename Str>
 void QueryImpl<Str>::handle_text(const Str &text){
-	//std::cout << "TEXT" << text << std::endl;
+	//std::cout << "TEXT";// << text << std::endl;
 	if(open_tags.size())
 		open_tags.top()->append_text(text);
 }
+
+template<typename Str>
+void QueryImpl<Str>::reset(){
+	first_selector = true;
+	descendant = false;
+}
+
+namespace CppQuery{
+template<>
+void QueryImpl<string>::handle_class(const string &str){
+	fusion::vector<string, string> attr_v("class", str);
+	handle_attr(attr_v);
+}
+
+template<>
+void QueryImpl<wstring>::handle_class(const wstring &str){
+	fusion::vector<wstring, wstring> attr_v(L"class", str);
+	handle_attr(attr_v);
+}
+
+template<>
+void QueryImpl<string>::handle_id(const string &str){
+	fusion::vector<string, string> attr_v("id", str);
+	handle_attr(attr_v);
+}
+
+template<>
+void QueryImpl<wstring>::handle_id(const wstring &str){
+	fusion::vector<wstring, wstring> attr_v(L"id", str);
+	handle_attr(attr_v);
+}
+} //end of namespace CppQuery
+
+template<typename Str>
+void QueryImpl<Str>::handle_contains(const Str &txt){
+	//cout << "contains ";// << str << endl;
+
+	if(first_selector){
+		vector<NodePtr> res;
+		for(int i=0; i<v.size(); ++i)
+			v[i]->search_with_text(txt, res);
+		v = res;
+	}else{
+		NotMatchingText<Str> predicat(txt);
+		v.erase(remove_if(v.begin(), v.end(), predicat), v.end());
+	}
+
+	first_selector = false;
+}
+
+template<typename Str>
+void QueryImpl<Str>::handle_attr(fusion::vector<Str, Str> attr_v){
+	//cout << "attr";// << fusion::at_c<0>(attr_v) << ":" << fusion::at_c<1>(attr_v) << endl;
+	
+wcout << L"attr" << v.size() << endl;
+	if(first_selector){
+		vector<NodePtr> res;
+		for(int i=0; i<v.size(); ++i)
+			v[i]->search_by_attribute(fusion::at_c<0>(attr_v), fusion::at_c<1>(attr_v), res);
+		v = res;
+	}else{
+		NotMatchingAttr<Str> predicat(fusion::at_c<0>(attr_v), fusion::at_c<1>(attr_v));
+		v.erase(remove_if(v.begin(), v.end(), predicat), v.end());
+	}
+wcout << v.size() << endl;
+	first_selector = false;
+}
+
+//before call v contains elements that are roots of elements that should be searched
+//after call v contains results
+template<typename Str>
+void QueryImpl<Str>::handle_element(const Str &el_name){
+	//cout << "element " << el_name.c_str() << endl;
+	wcout << L"EL" << endl;
+	if(first_selector){
+		vector<NodePtr> res;
+		for(int i=0; i<v.size(); ++i)
+			v[i]->search_by_tag_name(el_name, res);
+		v = res;
+	}else if(descendant){
+		//remove all nodes that have parents among vector v
+		//eg. <a1><a2><a3></a3></a2></a1> - if we are searching a3 inside a1 then searching inside a2 is redundant
+		HaveParentAmong<Str> predicat(v);
+		v.erase(remove_if(v.begin(), v.end(), predicat), v.end());
+		wcout << L"DESC" << v.size() << endl;
+		vector<NodePtr> res;
+		for(int i=0; i<v.size(); ++i)
+			v[i]->search_inside_by_tag_name(el_name, res);
+		v = res;
+
+		descendant = false; //descendant's been handled - reset flag
+	}else{
+		NotMatchingElement<Str> predicat(el_name);
+		v.erase(remove_if(v.begin(), v.end(), predicat), v.end());
+	}
+	//cout << v.size() << endl;
+	first_selector = false;
+}
+
+template<typename Str>
+void QueryImpl<Str>::handle_descendant(){
+	wcout << L"desc_handler" << endl;
+	descendant = true;
+}
+
+template<typename Str>
+void QueryImpl<Str>::handle_child(){
+	cout << "child" << endl;
+}
+
 
 template class QueryImpl<string>;
 template class QueryImpl<wstring>;

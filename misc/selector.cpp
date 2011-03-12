@@ -30,8 +30,32 @@ struct handle_id{
 };
 
 struct Handlers{
-	void handle_class (std::string str) const {
-	//	cout << "class" << str << endl;
+	void handle_class(const std::string &str){
+		cout << "class " << str << endl;
+	}
+
+	void handle_id(const std::string &str){
+		cout << "id " << str << endl;
+	}
+
+	void handle_contains(const std::string &str){
+		cout << "contains " << str << endl;
+	}
+
+	void handle_attr(fusion::vector<std::string, std::string> v){
+		cout << "attr" << fusion::at_c<0>(v) << ":" << fusion::at_c<1>(v) << endl;
+	}
+
+	void handle_element(const std::string &str){
+		cout << "element " << str << endl;
+	}
+
+	void handle_descendant(){
+		cout << "descendant" << endl;
+	}
+
+	void handle_child(){
+		cout << "child" << endl;
 	}
 };
 
@@ -46,7 +70,6 @@ void handle_id(const std::string &str){
 void handle_contains(const std::string &str){
 	cout << "contains " << str << endl;
 }
-
 
 void handle_attr(fusion::vector<std::string, std::string> v){
 	cout << "attr" << fusion::at_c<0>(v) << ":" << fusion::at_c<1>(v) << endl;
@@ -86,9 +109,9 @@ int main(){
 	StdRule id = '#' >> +(char_-special_chars) >> eps;
 	StdRule contains = ":contains(" >> +(char_-(special_chars | ')')) >> ')';
 	AttributeRule attr = '[' >> +(char_-(special_chars | '=')) >> '=' >> +(char_-']') >> ']';
-	StdRule has = ":has(" >> +(char_-')') >> ')';
+	//StdRule has = ":has(" >> +(char_-')') >> ')';
 	
-	StdRule pre_operator = +(class_[&handle_class] | id[&handle_id] | contains[&handle_contains] | attr[&handle_attr] | element[&handle_element] | (lit(' ') >> (char_-'>'))[&handle_descendant] | lit(" > ")[&handle_child]);
+	StdRule pre_operator = +(class_[&handle_class] | id[&handle_id] | contains[boost::bind(&Handlers::handle_contains, &h, _1)] | attr[&handle_attr] | element[&handle_element] | lit(" > ")[&handle_child] | (lit(' '))[&handle_descendant]);
 //	BasicSelectorRule selector = +(-('.' | '#' | (':' >> alnum )) >> alnum >> (char_(' ') | string(" > ") | ))
 	std::string in = "p:contains(tekst).special #my_id > div";
 	std::string::const_iterator begin = in.begin(), end = in.end();
