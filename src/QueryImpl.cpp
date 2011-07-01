@@ -85,7 +85,7 @@ using boost::bind;
 	Symbol special_chars = no_skip[lit('.') | '#' | ':'  | '[' | ' ' | '>'];
 	StdRule element = +(Chars<Str>::char_-special_chars);
 	StdRule class_ = lit('.') >> +(Chars<Str>::char_-special_chars);
-	StdRule id = '#' >> +(Chars<Str>::char_-special_chars) >> eps;
+	StdRule id = '#' >> +(Chars<Str>::char_-special_chars);
 	StdRule contains = ":contains(" >> +(Chars<Str>::char_-(special_chars | ')')) >> ')';
 	AttributeRule attr = '[' >> +(Chars<Str>::char_-(special_chars | '=')) >> '=' >> +(Chars<Str>::char_-']') >> ']';
 	
@@ -144,6 +144,12 @@ void QueryImpl<Str>::reset(){
 	descendant = false;
 }
 
+template<typename Str>
+void QueryImpl<Str>::remove_children(vector<NodePtr> &vec){
+	HaveParentAmong<Str> predicat(vec);
+	vec.erase(remove_if(vec.begin(), vec.end(), predicat), vec.end());
+}
+
 namespace CppQuery{
 template<>
 void QueryImpl<string>::handle_class(const string &str){
@@ -179,6 +185,17 @@ void QueryImpl<Str>::handle_contains(const Str &txt){
 		for(int i=0; i<v.size(); ++i)
 			v[i]->search_with_text(txt, res);
 		v = res;
+	}else if(descendant){
+		//remove all nodes that have parents among vector v
+		//eg. <a1><a2><a3></a3></a2></a1> - if we are searching a3 inside a1 then searching inside a2 is redundant
+		remove_children(v);
+
+		vector<NodePtr> res;
+		for(int i=0; i<v.size(); ++i)
+			v[i]->search_inside_with_text(txt, res);
+		v = res;
+
+		descendant = false; //descendant's been handled - reset flag
 	}else{
 		NotMatchingText<Str> predicat(txt);
 		v.erase(remove_if(v.begin(), v.end(), predicat), v.end());
@@ -197,6 +214,17 @@ wcout << L"attr" << v.size() << endl;
 		for(int i=0; i<v.size(); ++i)
 			v[i]->search_by_attribute(fusion::at_c<0>(attr_v), fusion::at_c<1>(attr_v), res);
 		v = res;
+	}else if(descendant){
+		//remove all nodes that have parents among vector v
+		//eg. <a1><a2><a3></a3></a2></a1> - if we are searching a3 inside a1 then searching inside a2 is redundant
+		remove_children(v);
+
+		vector<NodePtr> res;
+		for(int i=0; i<v.size(); ++i)
+			v[i]->search_inside_by_attribute(fusion::at_c<0>(attr_v), fusion::at_c<1>(attr_v), res);
+		v = res;
+
+		descendant = false; //descendant's been handled - reset flag
 	}else{
 		NotMatchingAttr<Str> predicat(fusion::at_c<0>(attr_v), fusion::at_c<1>(attr_v));
 		v.erase(remove_if(v.begin(), v.end(), predicat), v.end());
@@ -209,8 +237,6 @@ wcout << v.size() << endl;
 //after call v contains results
 template<typename Str>
 void QueryImpl<Str>::handle_element(const Str &el_name){
-	//cout << "element " << el_name.c_str() << endl;
-	wcout << L"EL" << endl;
 	if(first_selector){
 		vector<NodePtr> res;
 		for(int i=0; i<v.size(); ++i)
@@ -219,9 +245,8 @@ void QueryImpl<Str>::handle_element(const Str &el_name){
 	}else if(descendant){
 		//remove all nodes that have parents among vector v
 		//eg. <a1><a2><a3></a3></a2></a1> - if we are searching a3 inside a1 then searching inside a2 is redundant
-		HaveParentAmong<Str> predicat(v);
-		v.erase(remove_if(v.begin(), v.end(), predicat), v.end());
-		wcout << L"DESC" << v.size() << endl;
+		remove_children(v);
+
 		vector<NodePtr> res;
 		for(int i=0; i<v.size(); ++i)
 			v[i]->search_inside_by_tag_name(el_name, res);

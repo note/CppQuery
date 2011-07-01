@@ -152,6 +152,11 @@ namespace CppQuery{
 		 * Clear all flags used during selector parsing
 		 */
 		void reset();
+		
+		/**
+		 * Remove nodes from vector vec that have ancestor among items of vector vec
+		 */
+		void remove_children(std::vector<NodePtr> &vec);
 
 		//begin of html parsing handlers
 		void handle_start_tag(HtmlStartTagAttr &tag);

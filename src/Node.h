@@ -26,7 +26,7 @@ namespace CppQuery{
 		    
 		explicit Node(HtmlStartTagAttr &tag);
 		
-		//this constructor is useful when crearing unit tests, but it's not used by any CppQuery class
+		//this constructor is useful when creating unit tests, but it's not used by any CppQuery class
 		explicit Node(const Str &tag_name, std::vector<Str> attr_names, std::vector<Str> attr_values);
 		
 		NodePtr get_shared_ptr(){
@@ -81,7 +81,7 @@ namespace CppQuery{
 		//end of select methods
 		
 		private:
-		NodePtr ptr;
+		NodePtr ptr; // Node holds shared_ptr to itself
 		Str element_name;
 		std::map<Str, Str> attributes;
 		Str text;
