@@ -297,8 +297,7 @@ void QueryImpl<Str>::diff(const QueryImpl<Str> * other, vector<NodePtr> & res){
 template<typename Str>
 void QueryImpl<Str>::handle_start_not(){
 	//it's quite subtle. it may seem that tmp_res.top() should be pushed, but consider eg. "p :not(#main :sp)"
-	flags.push(first_selector);
-	flags.push(descendant);
+	push_flags();
 	tmp_res.push(roots.top());
 	reset();
 	wcout << L"HANDLE_START_NOT" << endl;
@@ -318,12 +317,22 @@ void QueryImpl<Str>::handle_end_not(){
 	wcout << L"HANDLE_END_NOT" << endl;
 	vector<NodePtr> another = tmp_res.top();
 	tmp_res.pop();
+	pop_flags();
 	IsPresent<Str> predicat(another);
+	
+	vector<NodePtr> tmp;
+	if(first_selector){
+		get_all(tmp, Node<Str>::Flags::roots | Node<Str>::Flags::descendants);
+		tmp_res.top() = tmp;
+	}
+	
+	if(descendant){
+		get_all(tmp, Node<Str>::Flags::descendants);
+		tmp_res.top() = tmp;
+	}
+	
 	tmp_res.top().erase(remove_if(tmp_res.top().begin(), tmp_res.top().end(), predicat), tmp_res.top().end());
-	descendant = flags.top();
-	flags.pop();
-	first_selector = flags.top();
-	flags.pop();
+	
 }
 
 template<typename Str>

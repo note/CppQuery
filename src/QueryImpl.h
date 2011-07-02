@@ -175,9 +175,26 @@ namespace CppQuery{
 		bool descendant;
 		
 		/**
-		 * Clear all flags used during selector parsing
+		 * Restores default values of all flags used during selector parsing
 		 */
 		void reset();
+		
+		void push_flags(){
+			flags.push(descendant);
+			flags.push(first_selector);
+		}
+		
+		void pop_flags(){
+			first_selector = flags.top();
+			flags.pop();
+			descendant = flags.top();
+			flags.pop();
+		}
+		
+		void get_all(std::vector<NodePtr> & v, const int flags){
+			for(int i=0; i<tmp_res.top().size(); ++i)
+				tmp_res.top()[i]->get_all(v, flags);
+		}
 		
 		/**
 		 * Remove nodes from vector vec that have ancestor among items of vector vec

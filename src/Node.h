@@ -22,6 +22,10 @@ namespace CppQuery{
 		typedef fusion::vector<Str, std::vector<fusion::vector<Str, Str> > > HtmlStartTagAttr; //each start tag consists of tag name and some number of pairs <attribute-name, attribute-value>
 		
 		public:
+		class Flags{
+			public:
+			static int descendants, children, roots;
+		};
 		Node(){}
 		    
 		explicit Node(HtmlStartTagAttr &tag);
@@ -60,6 +64,7 @@ namespace CppQuery{
 		
 		bool is_descendant_of(const NodePtr &potential_parent);
 		bool attr_exists(const Str &attribute);
+		void get_all(std::vector<NodePtr> & v, const int flags);
 		
 		//select methods:
 		void search_by_tag_name(const Str &tag_name, std::vector<NodePtr> &v);
@@ -90,10 +95,14 @@ namespace CppQuery{
 
 		//if deep is set to false then nodes that are at lower level than children are ignored.
 		//So eg. ignore_root=true and deep=false performs checks only for children
-		void search_by_tag_name_(const Str &tag_name, std::vector<NodePtr> &v, bool root=false, bool deep=true);
-		void search_by_attribute_(const Str &attribute_name, const Str &attribute_value, std::vector<NodePtr> &v, bool root=false, bool deep=true);
-		void search_with_text_(const Str &txt, std::vector<NodePtr> &v, bool root=false, bool deep=true);
+		void search_by_tag_name_(const Str &tag_name, std::vector<NodePtr> &v, const int flags);
+		void search_by_attribute_(const Str &attribute_name, const Str &attribute_value, std::vector<NodePtr> &v, const int flags);
+		void search_with_text_(const Str &txt, std::vector<NodePtr> &v, const int flags);
+		
 	};
+	template <typename Str> int Node<Str>::Flags::descendants = 1;
+	template <typename Str> int Node<Str>::Flags::children = 2;
+	template <typename Str> int Node<Str>::Flags::roots = 4;
 }
 
 #endif //CPP_QUERY_NODE_H

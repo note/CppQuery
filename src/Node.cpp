@@ -58,102 +58,112 @@ bool Node<Str>::has_text(const Str &txt){
 
 template<typename Str>
 void Node<Str>::search_by_tag_name(const Str &tag_name, vector<NodePtr> &v){
-	search_by_tag_name_(tag_name, v, false);
+	search_by_tag_name_(tag_name, v, Flags::roots | Flags::descendants);
 }
 
 template<typename Str>
 void Node<Str>::search_by_attribute(const Str &attribute_name, const Str &attribute_value, vector<NodePtr> &v){
-	search_by_attribute_(attribute_name, attribute_value, v, false);
+	search_by_attribute_(attribute_name, attribute_value, v, Flags::roots | Flags::descendants);
 }
 
 template<typename Str>
 void Node<Str>::search_with_text(const Str &txt, vector<NodePtr> &v){
-	search_with_text_(txt, v, false);
+	search_with_text_(txt, v, Flags::roots | Flags::descendants);
 }
 
 //search_inside* variants
 
 template<typename Str>
 void Node<Str>::search_inside_by_tag_name(const Str &txt, vector<NodePtr> &v){
-	search_by_tag_name_(txt, v, true);
+	search_by_tag_name_(txt, v, Flags::descendants);
 }
 
 template<typename Str>
 void Node<Str>::search_inside_by_attribute(const Str &attribute_name, const Str &attribute_value, vector<NodePtr> &v){
-	search_by_attribute_(attribute_name, attribute_value, v, true);
+	search_by_attribute_(attribute_name, attribute_value, v, Flags::descendants);
 }
 
 template<typename Str>
 void Node<Str>::search_inside_with_text(const Str &txt, vector<NodePtr> &v){
-	search_with_text_(txt, v, true);
+	search_with_text_(txt, v, Flags::descendants);
 }
 
 
 template<typename Str>
 void Node<Str>::search_among_children_by_tag_name(const Str &tag_name, std::vector<NodePtr> &v){
-	search_by_tag_name_(tag_name, v, true, false);
+	search_by_tag_name_(tag_name, v, Flags::children);
 }
 
 template<typename Str>
 void Node<Str>::search_among_children_by_attribute(const Str &attribute_name, const Str &attribute_value, std::vector<NodePtr> &v){
-	search_by_attribute_(attribute_name, attribute_value, v, true, false);
+	search_by_attribute_(attribute_name, attribute_value, v, Flags::children);
 }
 
 template<typename Str>
 void Node<Str>::search_among_children_with_text(const Str &text, std::vector<NodePtr> &v){
-	search_with_text_(text, v, true, false);
+	search_with_text_(text, v,  Flags::children);
 }
 
 //actual implementation of search_by_tag_name, search_by_attribute and search_with_text
 //because search* and search_inside* variants differs only in the way they treat root element then each pair is implemented with one method:
 
 template<typename Str>
-void Node<Str>::search_by_tag_name_(const Str &tag_name, vector<NodePtr> &v, bool ignore_root, bool deep){
+void Node<Str>::search_by_tag_name_(const Str &tag_name, vector<NodePtr> &v, const int flags){
 	//pre-order traversing
-	if(!ignore_root && has_tag_name(tag_name))
+	if((flags & Flags::roots) && has_tag_name(tag_name))
 		v.push_back(ptr);
 	
-	if(deep){
+	if(flags & Flags::descendants){
 		for(int i = 0; i < children.size(); ++i)
-			children[i]->search_by_tag_name_(tag_name, v);
-	}else{
+			children[i]->search_by_tag_name_(tag_name, v, Flags::roots | Flags::descendants);
+	}else if(flags & Flags::children){
 		for(int i = 0; i < children.size(); ++i)
-			if(children[i]->has_tag_name(tag_name))
-				v.push_back(children[i]->get_shared_ptr());
+			children[i]->search_by_tag_name_(tag_name, v, Flags::roots);
 	}
 }
 
 template<typename Str>
-void Node<Str>::search_by_attribute_(const Str &attribute_name, const Str &attribute_value, vector<NodePtr> &v, bool ignore_root, bool deep){
+void Node<Str>::search_by_attribute_(const Str &attribute_name, const Str &attribute_value, vector<NodePtr> &v, const int flags){
 	//pre-order traversing
-	if(!ignore_root && has_attribute_value(attribute_name, attribute_value))
+	if((flags & Flags::roots) && has_attribute_value(attribute_name, attribute_value))
 		v.push_back(ptr);
 	
-	if(deep){
+	if(flags & Flags::descendants){
 		for(int i = 0; i < children.size(); ++i)
-			children[i]->search_by_attribute_(attribute_name, attribute_value, v);
-	}else{
+			children[i]->search_by_attribute_(attribute_name, attribute_value, v, Flags::roots | Flags::descendants);
+	}else if(flags & Flags::children){
 		for(int i = 0; i < children.size(); ++i)
-			if(children[i]->has_attribute_value(attribute_name, attribute_value))
-				v.push_back(children[i]->get_shared_ptr());
+			children[i]->search_by_attribute_(attribute_name, attribute_value, v, Flags::roots);
 	}
 }
 
 template<typename Str>
-void Node<Str>::search_with_text_(const Str &txt, vector<NodePtr> &v, bool ignore_root, bool deep){
-	if(!ignore_root && has_text(txt))
+void Node<Str>::search_with_text_(const Str &txt, vector<NodePtr> &v, const int flags){
+	if((flags & Flags::roots) && has_text(txt))
 		v.push_back(ptr);
 	
-	if(deep){
+	if(flags & Flags::descendants){
 		for(int i = 0; i < children.size(); ++i)
-			children[i]->search_with_text_(txt, v);
-	}else{
+			children[i]->search_with_text_(txt, v, Flags::roots | Flags::descendants);
+	}else if(flags & Flags::children){
 		for(int i = 0; i < children.size(); ++i)
-			if(children[i]->has_text(txt))
-				v.push_back(children[i]->get_shared_ptr());
+			children[i]->search_with_text_(txt, v, Flags::roots);
 	}
 }
 
+template<typename Str>
+void Node<Str>::get_all(vector<NodePtr> & v, const int flags){
+	if(flags & Flags::roots)
+		v.push_back(ptr);
+	
+	if(flags & Flags::descendants){
+		for(int i = 0; i< children.size(); ++i)
+			children[i]->get_all(v, Flags::roots | Flags::descendants);
+	}else if(flags & Flags::children){
+		for(int i = 0; i < children.size(); ++i)
+			children[i]->get_all(v, Flags::roots);
+	}
+}
 
 template<typename Str>
 bool Node<Str>::is_descendant_of(const NodePtr &potential_parent){
