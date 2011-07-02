@@ -111,6 +111,23 @@ namespace CppQuery{
 		private:
 		const std::vector<NodePtr> &v;
 	};
+	
+	template<typename Str>
+	struct IsPresent{
+		typedef boost::shared_ptr<Node<Str> > NodePtr;
+
+		IsPresent(const std::vector<NodePtr> &v) : v(v){}
+
+		bool operator() (NodePtr &node){
+			for(int i=0; i<v.size(); ++i)
+				if(find(v.begin(), v.end(), node) != v.end())
+					return true;
+			return false;
+		}
+		
+		private:
+		const std::vector<NodePtr> &v;
+	};
 
 	template <typename Str>
 	class QueryImpl{
@@ -133,18 +150,27 @@ namespace CppQuery{
 		//works analogically to select besides of the fact that ignore roots elements when searching
 		QueryImpl * search_inside(const Str &selector);
 		int size(){
-			return roots.size();
+			return roots.top().size();
 		}
 
 		private:
-		QueryImpl(){} // do not use it in client code. Useful when creating empty object.
-		QueryImpl(std::vector<NodePtr> elements) : roots(elements){} //do not use it in client code. Useful when creating object in methods select and get_ith
+		QueryImpl(){} // do not use it in client code. Useful when creating an empty object.
+		QueryImpl(std::vector<NodePtr> elements){
+			roots.push(elements);
+		} //do not use it in client code. Useful when creating object in methods select and get_ith
 		std::stack<NodePtr> open_tags;
-		std::vector<NodePtr> roots;
-		std::vector<NodePtr> v;
+		
+		//stack of vectors because when parsing nested :not or :has we do something like function call
+		//so this methods push new vector when begin and pop when return
+		std::stack<std::vector<NodePtr> > roots;
+		
+		//the same idea as with roots
+		std::stack<std::vector<NodePtr> > tmp_res;
+		
+		std::stack<bool> flags;
 
 		//if set to false then some selector has been already applied in current search.
-		//eg. handling selector "div.special p": before applying "div" first_selector will be set to true to indicate that no selector has been applied so far, before applying ".special" and " p" will be set to false
+		//eg. handling selector "divspecial p": before applying "div" first_selector will be set to true to indicate that no selector has been applied so far, before applying ".special" and " p" will be set to false
 		bool first_selector;
 		bool descendant;
 		
@@ -171,9 +197,14 @@ namespace CppQuery{
 		void handle_contains(const Str &txt);
 		void handle_attr(fusion::vector<Str, Str> attr_v);
 		void handle_element(const Str &el_name);
+		void handle_not(const Str &str);
+		void handle_start_not();
+		void handle_end_not();
 		void handle_descendant();
 		void handle_child();
 		//end of selectors parsing handlers
+		
+		void diff(const QueryImpl<Str> * other, std::vector<NodePtr> & res);
 	};
 }
 

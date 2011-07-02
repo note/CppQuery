@@ -4,8 +4,10 @@
 
 #include "QueryImpl.h"
 
-using namespace CppQuery;
 using namespace std;
+using namespace CppQuery;
+
+namespace qi = spirit::qi;
 
 extern template class Node<string>;
 extern template class Node<wstring>;
@@ -17,6 +19,7 @@ QueryImpl<Str>::QueryImpl(const Str &html){
 	using spirit::lit;
 	using boost::bind;
 	
+	roots.push(vector<NodePtr>());
 
 	HtmlAttributeRule attribute = +(Chars<Str>::char_-(Chars<Str>::char_('=') | '>' | '<')) >> '=' >> -(lit('\'') | '"')  >> *(Chars<Str>::char_-(lit('\'') | '"')) >> -(lit('\'') | '"');
  	HtmlStartTagRule start_tag = no_skip['<' >> +(Chars<Str>::alnum)] >> *(attribute) >> '>';
@@ -26,29 +29,29 @@ QueryImpl<Str>::QueryImpl(const Str &html){
 	HtmlRule html_rule = *(-text[bind(&QueryImpl::handle_text, this, _1)] >> (start_tag[bind(&QueryImpl::handle_start_tag, this, _1)] | end_tag[bind(&QueryImpl::handle_end_tag, this, _1)] | start_end_tag[bind(&QueryImpl::handle_start_end_tag, this, _1)]));
 
 	typename Str::const_iterator begin = html.begin(), end = html.end();
-	spirit::qi::phrase_parse(begin, end, html_rule, Chars<Str>::space);
+	qi::phrase_parse(begin, end, html_rule, Chars<Str>::space);
 }
 
 template<typename Str>
 Str QueryImpl<Str>::text(){
 	Str res;
-	for(int i = 0; i < roots.size(); ++i)
-		res += roots[i]->get_text();
+	for(int i = 0; i < roots.top().size(); ++i)
+		res += roots.top()[i]->get_text();
 	return res;
 }
 
 template<typename Str>
 Str QueryImpl<Str>::get_attribute(const Str &attribute){
 	Str res;
-	for(int i = 0; i < roots.size(); ++i)
-		res += roots[i]->get_attribute(attribute);
+	for(int i = 0; i < roots.top().size(); ++i)
+		res += roots.top()[i]->get_attribute(attribute);
 	return res;
 }
 
 template<typename Str>
 bool QueryImpl<Str>::attr_exists(const Str &attribute){
-	for(size_t i = 0; i < roots.size(); ++i)
-		if(roots[i]->attr_exists(attribute))
+	for(size_t i = 0; i < roots.top().size(); ++i)
+		if(roots.top()[i]->attr_exists(attribute))
 			return true;
 
 	return false;
@@ -56,9 +59,9 @@ bool QueryImpl<Str>::attr_exists(const Str &attribute){
 
 template<typename Str>
 QueryImpl<Str> * QueryImpl<Str>::get_ith(int index){
-	if(index<roots.size()){
+	if(index<roots.top().size()){
 		vector<NodePtr> selected(1);
-		selected.push_back(roots[index]);
+		selected.push_back(roots.top()[index]);
 		return new QueryImpl(selected);
 	}else
 		return new QueryImpl();
@@ -68,34 +71,42 @@ template<typename Str>
 QueryImpl<Str> * QueryImpl<Str>::select(const Str &selector){
 	reset();
 	//cout << "HERE" << endl;
-	//v.clear();
-	v = roots;
-	using spirit::qi::int_;
+	//tmp_res.top().clear();
+	tmp_res.push(roots.top());
+	using qi::int_;
 	using spirit::lit;
 	using spirit::omit;
 	using spirit::no_skip;
 	using spirit::eps;
 
 using boost::bind;
-	typedef spirit::qi::rule<typename Str::const_iterator, Str, typename CharsTypes<Str>::space_type> BasicSelectorRule;
-	typedef spirit::qi::rule<typename Str::const_iterator, fusion::vector<Str, Str>(), typename CharsTypes<Str>::space_type> ParenthesisedOperator;
-	typedef spirit::qi::rule<typename Str::const_iterator> Symbol;
-	typedef spirit::qi::rule<typename Str::const_iterator, Str()> StdRule;
-	typedef spirit::qi::rule<typename Str::const_iterator, fusion::vector<Str, Str>()> AttributeRule;
-	Symbol special_chars = no_skip[lit('.') | '#' | ':'  | '[' | ' ' | '>'];
+	typedef qi::rule<typename Str::const_iterator, Str, typename CharsTypes<Str>::space_type> BasicSelectorRule;
+	typedef qi::rule<typename Str::const_iterator, fusion::vector<Str, Str>(), typename CharsTypes<Str>::space_type> ParenthesisedOperator;
+	typedef qi::rule<typename Str::const_iterator> Symbol;
+	typedef qi::rule<typename Str::const_iterator, Str()> StdRule;
+	typedef qi::rule<typename Str::const_iterator, fusion::vector<Str, Str>()> AttributeRule;
+	typedef qi::rule<typename Str::const_iterator, qi::unused_type()> UnusedTypeRule;
+	Symbol special_chars = no_skip[lit('.') | '#' | ':'  | '[' | ' ' | '>' | ')'];
+	StdRule selectors;
 	StdRule element = +(Chars<Str>::char_-special_chars);
 	StdRule class_ = lit('.') >> +(Chars<Str>::char_-special_chars);
 	StdRule id = '#' >> +(Chars<Str>::char_-special_chars);
 	StdRule contains = ":contains(" >> +(Chars<Str>::char_-(special_chars | ')')) >> ')';
 	AttributeRule attr = '[' >> +(Chars<Str>::char_-(special_chars | '=')) >> '=' >> +(Chars<Str>::char_-']') >> ']';
+	//StdRule not_ = ":not(" >> selectors >> ')';//[bind(&QueryImpl::handle_end_not, this)];
+	//StdRule not_ = lit(":not(")[bind(&QueryImpl::handle_start_not, this)] >> spirit::omit[+(Chars<Str>::char_-lit(')'))] >> lit(')')[bind(&QueryImpl::handle_end_not, this)];//[bind(&QueryImpl::handle_end_not, this)];
+	StdRule not_ = lit(":not(")[bind(&QueryImpl::handle_start_not, this)] >> spirit::omit[selectors] >> lit(')')[bind(&QueryImpl::handle_end_not, this)];
 	
- 	StdRule pre_operator = +(class_[bind(&QueryImpl::handle_class, this, _1)] | id[bind(&QueryImpl::handle_id, this, _1)] | contains[bind(&QueryImpl::handle_contains, this, _1)] | attr[bind(&QueryImpl::handle_attr, this, _1)] | element[bind(&QueryImpl::handle_element, this, _1)] | lit(" > ")[bind(&QueryImpl::handle_child, this)] | (lit(' '))[bind(&QueryImpl::handle_descendant, this)]);
+ 	selectors = +(class_[bind(&QueryImpl::handle_class, this, _1)] | id[bind(&QueryImpl::handle_id, this, _1)] | contains[bind(&QueryImpl::handle_contains, this, _1)] | 
+ 	attr[bind(&QueryImpl::handle_attr, this, _1)] | element[bind(&QueryImpl::handle_element, this, _1)] | lit(" > ")[bind(&QueryImpl::handle_child, this)] |
+ 	(lit(' '))[bind(&QueryImpl::handle_descendant, this)] | not_[bind(&QueryImpl::handle_not, this, _1)]);
  	typename Str::const_iterator begin = selector.begin(), end = selector.end();
-	spirit::qi::parse(begin, end, pre_operator);
+	qi::parse(begin, end, selectors);
 
 
-
-	return new QueryImpl(v);
+	QueryImpl * tmp = new QueryImpl(tmp_res.top());
+	tmp_res.pop();
+	return tmp;
 }
 
 template<typename Str>
@@ -107,7 +118,7 @@ void QueryImpl<Str>::handle_start_tag(HtmlStartTagAttr &tag){
 	if(open_tags.size())
 		open_tags.top()->add_child(new_element);
 	else
-		roots.push_back(new_element);
+		roots.top().push_back(new_element);
 	
 	open_tags.push(new_element);
 }
@@ -121,7 +132,7 @@ void QueryImpl<Str>::handle_start_end_tag(HtmlStartTagAttr &tag){
 	if(open_tags.size())
 		open_tags.top()->add_child(new_element);
 	else
-		roots.push_back(new_element);
+		roots.top().push_back(new_element);
 }
 
 template<typename Str>
@@ -174,6 +185,19 @@ void QueryImpl<wstring>::handle_id(const wstring &str){
 	fusion::vector<wstring, wstring> attr_v(L"id", str);
 	handle_attr(attr_v);
 }
+
+template<>
+void QueryImpl<string>::handle_not(const string & str){
+	cout << L"HANDLE_NOT" << endl;
+	cout << str << endl;
+}
+
+template<>
+void QueryImpl<wstring>::handle_not(const wstring & str){
+	wcout << L"HANDLE_NOT" << endl;
+	wcout << str << endl;
+}
+
 } //end of namespace CppQuery
 
 template<typename Str>
@@ -182,23 +206,23 @@ void QueryImpl<Str>::handle_contains(const Str &txt){
 
 	if(first_selector){
 		vector<NodePtr> res;
-		for(int i=0; i<v.size(); ++i)
-			v[i]->search_with_text(txt, res);
-		v = res;
+		for(int i=0; i<tmp_res.top().size(); ++i)
+			tmp_res.top()[i]->search_with_text(txt, res);
+		tmp_res.top() = res;
 	}else if(descendant){
 		//remove all nodes that have parents among vector v
 		//eg. <a1><a2><a3></a3></a2></a1> - if we are searching a3 inside a1 then searching inside a2 is redundant
-		remove_children(v);
+		remove_children(tmp_res.top());
 
 		vector<NodePtr> res;
-		for(int i=0; i<v.size(); ++i)
-			v[i]->search_inside_with_text(txt, res);
-		v = res;
+		for(int i=0; i<tmp_res.top().size(); ++i)
+			tmp_res.top()[i]->search_inside_with_text(txt, res);
+		tmp_res.top() = res;
 
 		descendant = false; //descendant's been handled - reset flag
 	}else{
 		NotMatchingText<Str> predicat(txt);
-		v.erase(remove_if(v.begin(), v.end(), predicat), v.end());
+		tmp_res.top().erase(remove_if(tmp_res.top().begin(), tmp_res.top().end(), predicat), tmp_res.top().end());
 	}
 
 	first_selector = false;
@@ -208,28 +232,28 @@ template<typename Str>
 void QueryImpl<Str>::handle_attr(fusion::vector<Str, Str> attr_v){
 	//cout << "attr";// << fusion::at_c<0>(attr_v) << ":" << fusion::at_c<1>(attr_v) << endl;
 	
-wcout << L"attr" << v.size() << endl;
+wcout << L"attr" << tmp_res.top().size() << endl;
 	if(first_selector){
 		vector<NodePtr> res;
-		for(int i=0; i<v.size(); ++i)
-			v[i]->search_by_attribute(fusion::at_c<0>(attr_v), fusion::at_c<1>(attr_v), res);
-		v = res;
+		for(int i=0; i<tmp_res.top().size(); ++i)
+			tmp_res.top()[i]->search_by_attribute(fusion::at_c<0>(attr_v), fusion::at_c<1>(attr_v), res);
+		tmp_res.top() = res;
 	}else if(descendant){
 		//remove all nodes that have parents among vector v
 		//eg. <a1><a2><a3></a3></a2></a1> - if we are searching a3 inside a1 then searching inside a2 is redundant
-		remove_children(v);
+		remove_children(tmp_res.top());
 
 		vector<NodePtr> res;
-		for(int i=0; i<v.size(); ++i)
-			v[i]->search_inside_by_attribute(fusion::at_c<0>(attr_v), fusion::at_c<1>(attr_v), res);
-		v = res;
+		for(int i=0; i<tmp_res.top().size(); ++i)
+			tmp_res.top()[i]->search_inside_by_attribute(fusion::at_c<0>(attr_v), fusion::at_c<1>(attr_v), res);
+		tmp_res.top() = res;
 
 		descendant = false; //descendant's been handled - reset flag
 	}else{
 		NotMatchingAttr<Str> predicat(fusion::at_c<0>(attr_v), fusion::at_c<1>(attr_v));
-		v.erase(remove_if(v.begin(), v.end(), predicat), v.end());
+		tmp_res.top().erase(remove_if(tmp_res.top().begin(), tmp_res.top().end(), predicat), tmp_res.top().end());
 	}
-wcout << v.size() << endl;
+wcout << tmp_res.top().size() << endl;
 	first_selector = false;
 }
 
@@ -239,26 +263,73 @@ template<typename Str>
 void QueryImpl<Str>::handle_element(const Str &el_name){
 	if(first_selector){
 		vector<NodePtr> res;
-		for(int i=0; i<v.size(); ++i)
-			v[i]->search_by_tag_name(el_name, res);
-		v = res;
+		for(int i=0; i<tmp_res.top().size(); ++i)
+			tmp_res.top()[i]->search_by_tag_name(el_name, res);
+		tmp_res.top() = res;
 	}else if(descendant){
 		//remove all nodes that have parents among vector v
 		//eg. <a1><a2><a3></a3></a2></a1> - if we are searching a3 inside a1 then searching inside a2 is redundant
-		remove_children(v);
+		remove_children(tmp_res.top());
 
 		vector<NodePtr> res;
-		for(int i=0; i<v.size(); ++i)
-			v[i]->search_inside_by_tag_name(el_name, res);
-		v = res;
+		for(int i=0; i<tmp_res.top().size(); ++i)
+			tmp_res.top()[i]->search_inside_by_tag_name(el_name, res);
+		tmp_res.top() = res;
 
 		descendant = false; //descendant's been handled - reset flag
 	}else{
 		NotMatchingElement<Str> predicat(el_name);
-		v.erase(remove_if(v.begin(), v.end(), predicat), v.end());
+		tmp_res.top().erase(remove_if(tmp_res.top().begin(), tmp_res.top().end(), predicat), tmp_res.top().end());
 	}
-	//cout << v.size() << endl;
+	//cout << tmp_res.top().size() << endl;
 	first_selector = false;
+}
+
+template <typename Str>
+void QueryImpl<Str>::diff(const QueryImpl<Str> * other, vector<NodePtr> & res){
+	//vector<NodePtr> res;
+	for(int i=0; i<tmp_res.top().size(); ++i)
+		if(find(other->roots.top().begin(), other->roots.top().end(), tmp_res.top()[i]) != other->roots.top().end())
+			res.push_back(tmp_res.top()[i]);
+//	return res;
+}
+
+template<typename Str>
+void QueryImpl<Str>::handle_start_not(){
+	//it's quite subtle. it may seem that tmp_res.top() should be pushed, but consider eg. "p :not(#main :sp)"
+	flags.push(first_selector);
+	flags.push(descendant);
+	tmp_res.push(roots.top());
+	reset();
+	wcout << L"HANDLE_START_NOT" << endl;
+	//wcout << str << endl;
+	/*roots.push(roots.top());
+	QueryImpl<Str> * q = select(str);
+	roots.pop();
+	vector<NodePtr> res;
+	diff(q, res);
+	tmp_res.top() = res;
+	wcout << res.size() << endl;*/
+}
+
+
+template<typename Str>
+void QueryImpl<Str>::handle_end_not(){
+	wcout << L"HANDLE_END_NOT" << endl;
+	vector<NodePtr> another = tmp_res.top();
+	tmp_res.pop();
+	IsPresent<Str> predicat(another);
+	tmp_res.top().erase(remove_if(tmp_res.top().begin(), tmp_res.top().end(), predicat), tmp_res.top().end());
+	descendant = flags.top();
+	flags.pop();
+	first_selector = flags.top();
+	flags.pop();
+}
+
+template<typename Str>
+void QueryImpl<Str>::handle_not(const Str & str){
+	wcout << L"HANDLE_NOT" << endl;
+	wcout << str << endl;
 }
 
 template<typename Str>
