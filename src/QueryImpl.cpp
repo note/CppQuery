@@ -152,6 +152,7 @@ template<typename Str>
 void QueryImpl<Str>::reset(){
 	first_selector = true;
 	descendant = false;
+	child = false;
 }
 
 template<typename Str>
@@ -208,6 +209,11 @@ void QueryImpl<Str>::handle_contains(const Str &txt){
 
 		descendant = false; //descendant's been handled - reset flag
 	}else{
+		if(child){
+			std::vector<NodePtr> v;
+			get_all(v, Node<Str>::Flags::children);
+			tmp_res.top() = v;
+		}
 		NotMatchingText<Str> predicat(txt);
 		tmp_res.top().erase(remove_if(tmp_res.top().begin(), tmp_res.top().end(), predicat), tmp_res.top().end());
 	}
@@ -237,6 +243,11 @@ wcout << L"attr" << tmp_res.top().size() << endl;
 
 		descendant = false; //descendant's been handled - reset flag
 	}else{
+		if(child){
+			std::vector<NodePtr> v;
+			get_all(v, Node<Str>::Flags::children);
+			tmp_res.top() = v;
+		}
 		NotMatchingAttr<Str> predicat(fusion::at_c<0>(attr_v), fusion::at_c<1>(attr_v));
 		tmp_res.top().erase(remove_if(tmp_res.top().begin(), tmp_res.top().end(), predicat), tmp_res.top().end());
 	}
@@ -265,6 +276,11 @@ void QueryImpl<Str>::handle_element(const Str &el_name){
 
 		descendant = false; //descendant's been handled - reset flag
 	}else{
+		if(child){
+			std::vector<NodePtr> v;
+			get_all(v, Node<Str>::Flags::children);
+			tmp_res.top() = v;
+		}
 		NotMatchingElement<Str> predicat(el_name);
 		tmp_res.top().erase(remove_if(tmp_res.top().begin(), tmp_res.top().end(), predicat), tmp_res.top().end());
 	}
@@ -312,6 +328,14 @@ void QueryImpl<Str>::handle_end_not(){
 		tmp_res.top() = tmp;
 	}
 	
+	if(child){
+		if(child){
+			std::vector<NodePtr> v;
+			get_all(v, Node<Str>::Flags::children);
+			tmp_res.top() = v;
+		}
+	}
+	
 	tmp_res.top().erase(remove_if(tmp_res.top().begin(), tmp_res.top().end(), predicat), tmp_res.top().end());
 }
 
@@ -343,6 +367,11 @@ void QueryImpl<Str>::handle_end_has(){
 	}else{
 		another = tmp_res.top();
 		tmp_res.pop();
+		if(child){
+			std::vector<NodePtr> v;
+			get_all(v, Node<Str>::Flags::children);
+			tmp_res.top() = v;
+		}
 		HaveNotChildrenAmong<Str> predicat(another);
 		tmp_res.top().erase(remove_if(tmp_res.top().begin(), tmp_res.top().end(), predicat), tmp_res.top().end());
 	}
@@ -357,6 +386,7 @@ void QueryImpl<Str>::handle_descendant(){
 template<typename Str>
 void QueryImpl<Str>::handle_child(){
 	cout << "child" << endl;
+	child = true;
 }
 
 

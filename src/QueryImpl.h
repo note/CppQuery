@@ -190,6 +190,7 @@ namespace CppQuery{
 		//eg. handling selector "divspecial p": before applying "div" first_selector will be set to true to indicate that no selector has been applied so far, before applying ".special" and " p" will be set to false
 		bool first_selector;
 		bool descendant;
+		bool child;
 		
 		/**
 		 * Restores default values of all flags used during selector parsing
@@ -197,6 +198,7 @@ namespace CppQuery{
 		void reset();
 		
 		void push_flags(){
+			flags.push(child);
 			flags.push(descendant);
 			flags.push(first_selector);
 		}
@@ -205,6 +207,8 @@ namespace CppQuery{
 			first_selector = flags.top();
 			flags.pop();
 			descendant = flags.top();
+			flags.pop();
+			child = flags.top();
 			flags.pop();
 		}
 		

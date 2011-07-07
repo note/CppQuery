@@ -16,7 +16,7 @@ int main(){
 	wcout.imbue(loc);
 	ios_base::sync_with_stdio(false);
 
-	CppQuery::Query<wstring> q(L"<html><div id='main'><h3 class='sp'>It is header zażółć</h3><p class='special'>abc</p><p>Lorem ipsum dolor</p><p class='sp'>Second</p></div><div><div id='footer'><p id='copy'>Copyright</p><p class='special'>Copyleft</p></div><a class=\"special\">it is tagged</a></div></html>");
+	CppQuery::Query<wstring> q(L"<html><div id='main'><h3 class='sp'>It is header zażółć</h3><p class='special'>abc</p><p>Lorem ipsum dolor</p><p class='sp'>Second</p></div><div id='footer'><p id='copy'>Copyright</p><p class='special'>Copyleft</p><a>anything</a></div><a class=\"special\">it is tagged</a></html>");
 	//std::cout << "RERERE" << std::endl;
 	//std::wcout << L"helloł" << std::endl;
 	
@@ -34,7 +34,9 @@ int main(){
 	wcout << q(L"#main p:not(.special)").text() << endl;
 	wcout << q(L"p:not(#footer .special)").text() << endl;*/
 	
-	wcout << q(L"div:has(a)").size() << endl;
+	//wcout << q(L"div:has(a)").size() << endl;
+	
+	wcout << q(L"html a").text() << endl;
 	
 // 	CppQuery::Query<std::string> q("<div id='main'><h3 class='sp'>It is header za</h3><p>Lorem ipsum dolor</p><p class='sp'>Second</p></div>");
 // 	std::cout << q("p[class=sp]").text() << std::endl;
