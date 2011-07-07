@@ -113,6 +113,23 @@ namespace CppQuery{
 	};
 	
 	template<typename Str>
+	struct HaveNotChildrenAmong{
+		typedef boost::shared_ptr<Node<Str> > NodePtr;
+
+		HaveNotChildrenAmong(const std::vector<NodePtr> &v) : descendants_nodes(v){}
+
+		bool operator() (NodePtr &node){
+			for(int i=0; i<descendants_nodes.size(); ++i)
+				if(descendants_nodes[i] != node && descendants_nodes[i]->is_descendant_of(node))
+					return false;
+			return true;
+		}
+		
+		private:
+		const std::vector<NodePtr> &descendants_nodes;
+	};
+	
+	template<typename Str>
 	struct IsPresent{
 		typedef boost::shared_ptr<Node<Str> > NodePtr;
 
@@ -196,6 +213,16 @@ namespace CppQuery{
 				tmp_res.top()[i]->get_all(v, flags);
 		}
 		
+		void get_ancestors(std::vector<NodePtr> & v){
+			for(int i=0; i<tmp_res.top().size(); ++i)
+				tmp_res.top()[i]->get_ancestors(v, true);
+		}
+		
+		void get_ancestors_inside(std::vector<NodePtr> & v, std::vector<NodePtr> & res){
+			for(int i=0; i<v.size(); ++i)
+				v[i]->get_ancestors_inside(v, tmp_res.top(), res);
+		}
+		
 		/**
 		 * Remove nodes from vector vec that have ancestor among items of vector vec
 		 */
@@ -214,9 +241,10 @@ namespace CppQuery{
 		void handle_contains(const Str &txt);
 		void handle_attr(fusion::vector<Str, Str> attr_v);
 		void handle_element(const Str &el_name);
-		void handle_not(const Str &str);
 		void handle_start_not();
 		void handle_end_not();
+		void handle_start_has();
+		void handle_end_has();
 		void handle_descendant();
 		void handle_child();
 		//end of selectors parsing handlers

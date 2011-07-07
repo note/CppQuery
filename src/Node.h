@@ -19,6 +19,7 @@ namespace CppQuery{
 	template<typename Str>
 	class Node{
 		typedef boost::shared_ptr<Node> NodePtr;
+		typedef std::vector<NodePtr> VectorNodePtr;
 		typedef fusion::vector<Str, std::vector<fusion::vector<Str, Str> > > HtmlStartTagAttr; //each start tag consists of tag name and some number of pairs <attribute-name, attribute-value>
 		
 		public:
@@ -62,27 +63,29 @@ namespace CppQuery{
 		}
 		//end of getters
 		
-		bool is_descendant_of(const NodePtr &potential_parent);
-		bool attr_exists(const Str &attribute);
-		void get_all(std::vector<NodePtr> & v, const int flags);
+		bool is_descendant_of(const NodePtr &potential_parent) const;
+		bool attr_exists(const Str &attribute) const;
+		void get_all(VectorNodePtr & v, const int flags) const;
+		void get_ancestors(VectorNodePtr & v, bool ignore_current_node) const;
+		bool get_ancestors_inside(VectorNodePtr & descendants, VectorNodePtr & parents, VectorNodePtr & res, bool ignore_current_node = true);
 		
 		//select methods:
-		void search_by_tag_name(const Str &tag_name, std::vector<NodePtr> &v);
-		void search_by_attribute(const Str &attribute_name, const Str &attribute_value, std::vector<NodePtr> &v);
-		void search_with_text(const Str &txt, std::vector<NodePtr> &v);
+		void search_by_tag_name(const Str &tag_name, VectorNodePtr &v);
+		void search_by_attribute(const Str &attribute_name, const Str &attribute_value, VectorNodePtr &v);
+		void search_with_text(const Str &txt, VectorNodePtr &v);
 		
 		//search_inside* variants
-		void search_inside_by_tag_name(const Str &tag_name, std::vector<NodePtr> &v);
-		void search_inside_by_attribute(const Str &attribute_name, const Str &attribute_value, std::vector<NodePtr> &v);
-		void search_inside_with_text(const Str &text, std::vector<NodePtr> &v);
+		void search_inside_by_tag_name(const Str &tag_name, VectorNodePtr &v);
+		void search_inside_by_attribute(const Str &attribute_name, const Str &attribute_value, VectorNodePtr &v);
+		void search_inside_with_text(const Str &text, VectorNodePtr &v);
 		
 		bool has_tag_name(const Str &tag_name);
 		bool has_attribute_value(const Str &attribute_name, const Str &attribute_value);
 		bool has_text(const Str &text);
 		
-		void search_among_children_by_tag_name(const Str &tag_name, std::vector<NodePtr> &v);
-		void search_among_children_by_attribute(const Str &attribute_name, const Str &attribute_value, std::vector<NodePtr> &v);
-		void search_among_children_with_text(const Str &text, std::vector<NodePtr> &v);
+		void search_among_children_by_tag_name(const Str &tag_name, VectorNodePtr &v);
+		void search_among_children_by_attribute(const Str &attribute_name, const Str &attribute_value, VectorNodePtr &v);
+		void search_among_children_with_text(const Str &text, VectorNodePtr &v);
 		//end of select methods
 		
 		private:
@@ -91,13 +94,13 @@ namespace CppQuery{
 		std::map<Str, Str> attributes;
 		Str text;
 		NodePtr parent;
-		std::vector<NodePtr> children; //boost::shared_ptr is safe because whole structure containing HTML will be a tree - so there will be no cycles in it
+		VectorNodePtr children; //boost::shared_ptr is safe because whole structure containing HTML will be a tree - so there will be no cycles in it
 
 		//if deep is set to false then nodes that are at lower level than children are ignored.
 		//So eg. ignore_root=true and deep=false performs checks only for children
-		void search_by_tag_name_(const Str &tag_name, std::vector<NodePtr> &v, const int flags);
-		void search_by_attribute_(const Str &attribute_name, const Str &attribute_value, std::vector<NodePtr> &v, const int flags);
-		void search_with_text_(const Str &txt, std::vector<NodePtr> &v, const int flags);
+		void search_by_tag_name_(const Str &tag_name, VectorNodePtr &v, const int flags);
+		void search_by_attribute_(const Str &attribute_name, const Str &attribute_value, VectorNodePtr &v, const int flags);
+		void search_with_text_(const Str &txt, VectorNodePtr &v, const int flags);
 		
 	};
 	template <typename Str> int Node<Str>::Flags::descendants = 1;

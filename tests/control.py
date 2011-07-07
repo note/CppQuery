@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import urllib2
 from pyquery import PyQuery as pq
 
@@ -28,3 +29,5 @@ print(html("p:not(.some)").text())
 
 print(html(".some").eq(1).text())
 print(len(html("h4")))
+
+print(len(html("div:has(b)")))

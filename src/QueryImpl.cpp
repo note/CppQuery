@@ -93,13 +93,12 @@ using boost::bind;
 	StdRule id = '#' >> +(Chars<Str>::char_-special_chars);
 	StdRule contains = ":contains(" >> +(Chars<Str>::char_-(special_chars | ')')) >> ')';
 	AttributeRule attr = '[' >> +(Chars<Str>::char_-(special_chars | '=')) >> '=' >> +(Chars<Str>::char_-']') >> ']';
-	//StdRule not_ = ":not(" >> selectors >> ')';//[bind(&QueryImpl::handle_end_not, this)];
-	//StdRule not_ = lit(":not(")[bind(&QueryImpl::handle_start_not, this)] >> spirit::omit[+(Chars<Str>::char_-lit(')'))] >> lit(')')[bind(&QueryImpl::handle_end_not, this)];//[bind(&QueryImpl::handle_end_not, this)];
 	StdRule not_ = lit(":not(")[bind(&QueryImpl::handle_start_not, this)] >> spirit::omit[selectors] >> lit(')')[bind(&QueryImpl::handle_end_not, this)];
+	StdRule has_ = lit(":has(")[bind(&QueryImpl::handle_start_has, this)] >> spirit::omit[selectors] >> lit(')')[bind(&QueryImpl::handle_end_has, this)];
 	
  	selectors = +(class_[bind(&QueryImpl::handle_class, this, _1)] | id[bind(&QueryImpl::handle_id, this, _1)] | contains[bind(&QueryImpl::handle_contains, this, _1)] | 
  	attr[bind(&QueryImpl::handle_attr, this, _1)] | element[bind(&QueryImpl::handle_element, this, _1)] | lit(" > ")[bind(&QueryImpl::handle_child, this)] |
- 	(lit(' '))[bind(&QueryImpl::handle_descendant, this)] | not_[bind(&QueryImpl::handle_not, this, _1)]);
+ 	(lit(' '))[bind(&QueryImpl::handle_descendant, this)] | not_ | has_);
  	typename Str::const_iterator begin = selector.begin(), end = selector.end();
 	qi::parse(begin, end, selectors);
 
@@ -184,18 +183,6 @@ template<>
 void QueryImpl<wstring>::handle_id(const wstring &str){
 	fusion::vector<wstring, wstring> attr_v(L"id", str);
 	handle_attr(attr_v);
-}
-
-template<>
-void QueryImpl<string>::handle_not(const string & str){
-	cout << L"HANDLE_NOT" << endl;
-	cout << str << endl;
-}
-
-template<>
-void QueryImpl<wstring>::handle_not(const wstring & str){
-	wcout << L"HANDLE_NOT" << endl;
-	wcout << str << endl;
 }
 
 } //end of namespace CppQuery
@@ -301,14 +288,6 @@ void QueryImpl<Str>::handle_start_not(){
 	tmp_res.push(roots.top());
 	reset();
 	wcout << L"HANDLE_START_NOT" << endl;
-	//wcout << str << endl;
-	/*roots.push(roots.top());
-	QueryImpl<Str> * q = select(str);
-	roots.pop();
-	vector<NodePtr> res;
-	diff(q, res);
-	tmp_res.top() = res;
-	wcout << res.size() << endl;*/
 }
 
 
@@ -322,23 +301,51 @@ void QueryImpl<Str>::handle_end_not(){
 	
 	vector<NodePtr> tmp;
 	if(first_selector){
+		remove_children(tmp_res.top());
 		get_all(tmp, Node<Str>::Flags::roots | Node<Str>::Flags::descendants);
 		tmp_res.top() = tmp;
 	}
 	
 	if(descendant){
+		remove_children(tmp_res.top());
 		get_all(tmp, Node<Str>::Flags::descendants);
 		tmp_res.top() = tmp;
 	}
 	
 	tmp_res.top().erase(remove_if(tmp_res.top().begin(), tmp_res.top().end(), predicat), tmp_res.top().end());
-	
 }
 
 template<typename Str>
-void QueryImpl<Str>::handle_not(const Str & str){
-	wcout << L"HANDLE_NOT" << endl;
-	wcout << str << endl;
+void QueryImpl<Str>::handle_start_has(){
+	wcout << L"HANDLE_START_HAS" << endl;
+	push_flags();
+	tmp_res.push(roots.top());
+	reset();
+}
+
+//when that method is called in tmp_res.top() there are nodes found with expression :has()
+template<typename Str>
+void QueryImpl<Str>::handle_end_has(){
+	wcout << L"HANDLE_END_HAS" << endl;
+	vector<NodePtr> another;
+	pop_flags();
+	
+	if(first_selector){
+		get_ancestors(another); // get ancestors of nodes in tmp_res.top()
+		tmp_res.pop(); // we don't need nodes found with expression :has() anymore
+		tmp_res.top() = another;
+	}else if(descendant){
+		vector<NodePtr> res;
+		another = tmp_res.top();
+		tmp_res.pop();
+		get_ancestors_inside(another, res);
+		tmp_res.top() = res;
+	}else{
+		another = tmp_res.top();
+		tmp_res.pop();
+		HaveNotChildrenAmong<Str> predicat(another);
+		tmp_res.top().erase(remove_if(tmp_res.top().begin(), tmp_res.top().end(), predicat), tmp_res.top().end());
+	}
 }
 
 template<typename Str>

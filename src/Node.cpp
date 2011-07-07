@@ -30,7 +30,7 @@ Str Node<Str>::get_attribute(const Str &attribute){
 }
 
 template<typename Str>
-bool Node<Str>::attr_exists(const Str &attribute){
+bool Node<Str>::attr_exists(const Str &attribute) const{
 	return attributes.find(attribute) != attributes.end();
 }
 
@@ -152,7 +152,7 @@ void Node<Str>::search_with_text_(const Str &txt, vector<NodePtr> &v, const int 
 }
 
 template<typename Str>
-void Node<Str>::get_all(vector<NodePtr> & v, const int flags){
+void Node<Str>::get_all(vector<NodePtr> & v, const int flags) const{
 	if(flags & Flags::roots)
 		v.push_back(ptr);
 	
@@ -166,7 +166,34 @@ void Node<Str>::get_all(vector<NodePtr> & v, const int flags){
 }
 
 template<typename Str>
-bool Node<Str>::is_descendant_of(const NodePtr &potential_parent){
+void Node<Str>::get_ancestors(std::vector<NodePtr> & v, bool ignore_current_node) const{
+	if(parent)
+		parent->get_ancestors(v, false);
+	
+	if(!ignore_current_node)
+		v.push_back(ptr);
+}
+
+template<typename Str>
+bool Node<Str>::get_ancestors_inside(VectorNodePtr & descendants, VectorNodePtr & parents, VectorNodePtr & res, bool ignore_current_node){
+	bool success = false;
+	if(parent)
+		success = parent->get_ancestors_inside(descendants, parents, res, false);
+	
+	if(!ignore_current_node){
+		descendants.erase(remove(descendants.begin(), descendants.end(), ptr), descendants.end()); // to prevent from unneccessary checking
+		if(success){
+			res.push_back(ptr);
+			return true;
+		}else
+			if(find(parents.begin(), parents.end(), ptr) != parents.end())
+				return true;
+	}
+	return false;
+}
+
+template<typename Str>
+bool Node<Str>::is_descendant_of(const NodePtr &potential_parent) const{
 	if(!parent)
 		return false;
 
