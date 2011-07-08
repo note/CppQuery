@@ -241,6 +241,7 @@ namespace CppQuery{
 		void handle_start_end_tag(HtmlStartTagAttr &tag);
 		void handle_end_tag(const Str &tag);
 		void handle_text(const Str &text);
+		void handle_comment();
 		//end of html parsing handlers
 		
 		//begin of selectors parsing handlers

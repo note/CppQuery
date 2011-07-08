@@ -1,6 +1,7 @@
 // vim: fileencoding=utf-8 :
 #include <gtest/gtest.h>
 #include "../CppQuery.h"
+#include <boost/locale.hpp>
 #include <sstream>
 #include <fstream>
 #include <string>
@@ -14,16 +15,23 @@ const string open_tags_file = "open_tags.html";
 class CppQueryTest : public ::testing::Test{
 	public:
 	CppQueryTest(const string &fileName){
-		ifstream s(fileName.c_str());
-		stringstream ss;
+		boost::locale::generator gen;
+		locale loc = gen("pl.UTF-8");
+		locale::global(loc);
+		
+		wcout.imbue(loc);
+		ios_base::sync_with_stdio(false);
+	    
+		wifstream s(fileName.c_str());
+		wstringstream ss;
 		ss << s.rdbuf();
 		html = ss.str();
 		cq.load(html);
 	}
 
 	protected:
-	string html;
-	CppQuery::Query<string> cq;
+	wstring html;
+	CppQuery::Query<wstring> cq;
 };
 
 class SimpleCase : public CppQueryTest{
@@ -43,8 +51,8 @@ class OpenTagsCase : public CppQueryTest{
 
 TEST_F(SimpleCase, Selectors){
 // 	//should return 5 because one paragraph is inside comment
- 	EXPECT_EQ(5, cq("p").size());
- 	EXPECT_EQ(5, cq("P").size());
+ 	EXPECT_EQ(5, cq(L"p").size());
+ 	EXPECT_EQ(5, cq(L"P").size());
 // 	
 // 	//:contains
 // 	EXPECT_STREQ("Lorem ipsum dolor ...", cq(":contains(dolor)").text().c_str());
@@ -97,7 +105,7 @@ TEST_F(SimpleCase, Selectors){
 
 TEST_F(SimpleCase, Problematic){
 	//checks if deals with: <p class="some">Second <b>paragraph</b> ...</p>
-	EXPECT_STREQ("Second paragraph ...", cq("p")[1].text().c_str());
+	EXPECT_STREQ(L"Second paragraph ...", cq(L"p")[1].text().c_str());
 	
 	/*EXPECT_STREQ("Lorem ipsum dolor ...Second paragraph ...", cq("#first p").text().c_str()); //check how it deals when text() is called on object containing a few nodes (should concatenate)
 	

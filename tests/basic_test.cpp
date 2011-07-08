@@ -16,14 +16,14 @@ int main(){
 	wcout.imbue(loc);
 	ios_base::sync_with_stdio(false);
 
-	CppQuery::Query<wstring> q(L"<html><div id='main'><h3 class='sp'>It is header zażółć</h3><p class='special'>abc</p><p>Lorem ipsum dolor</p><p class='sp'>Second</p></div><div id='footer'><p id='copy'>Copyright</p><p class='special'>Copyleft</p><a>anything</a></div><a class=\"special\">it is tagged</a></html>");
+	CppQuery::Query<wstring> q(L"<html><div id='main'>  <!--  <h3 class='sp'>It is header zażółć</h3>  -->  <p class='special'>abc</p><p>Lorem ipsum dolor</p><p class='sp'>Second</p></div><div id='footer'><p id='copy'>Copyright</p><p class='special'>Copyleft</p><a>anything</a></div><a class=\"special\">it is tagged</a></html>");
 	//std::cout << "RERERE" << std::endl;
 	//std::wcout << L"helloł" << std::endl;
 	
 	/*wcout << q(L"a").text() << endl;
-	wcout << q(L"#footer p").text() << endl;
+	wcout << q(L"#footer p").text() << endl;*/
 	wcout << q(L".sp").size() << endl;
-	wcout << L"contains: " << q(L":contains(is)").size() << endl;
+	/*wcout << L"contains: " << q(L":contains(is)").size() << endl;
 	wcout << q(L":contains(ipsum)").text() << endl;*/
 	//wcout << q(L"#copy").size() << endl;
 	//wcout << q(L"div:not(#footer)").size() << endl;

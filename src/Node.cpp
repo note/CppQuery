@@ -54,7 +54,7 @@ bool Node<Str>::has_attribute_value(const Str &attribute_name, const Str &attrib
 
 template<typename Str>
 bool Node<Str>::has_text(const Str &txt){
-	return (text.find(txt) != Str::npos);
+	return (get_text().find(txt) != Str::npos);
 }
 //end of "has_" methods
 

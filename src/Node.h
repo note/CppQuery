@@ -50,7 +50,7 @@ namespace CppQuery{
 		}
 
 		void append_text(const Str &txt){
-			text += txt;
+			texts.push_back(txt);
 		}
 		//end of methods for constructing
 		
@@ -96,7 +96,12 @@ namespace CppQuery{
 		NodePtr ptr; // Node holds shared_ptr to itself
 		Str element_name;
 		std::map<Str, Str> attributes;
-		Str text;
+		
+		// it holds text parts.
+		// For: <p>first part <b>something</b> second part</p>
+		// texts[0] = "first part ", texts[1] = " second part"
+		std::vector<Str> texts;
+		
 		NodePtr parent;
 		VectorNodePtr children; //boost::shared_ptr is safe because whole structure containing HTML will be a tree - so there will be no cycles in it
 

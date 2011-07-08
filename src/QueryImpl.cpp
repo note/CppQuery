@@ -22,11 +22,12 @@ QueryImpl<Str>::QueryImpl(const Str &html){
 	roots.push(vector<NodePtr>());
 
 	HtmlAttributeRule attribute = +(Chars<Str>::char_-(Chars<Str>::char_('=') | '>' | '<')) >> '=' >> -(lit('\'') | '"')  >> *(Chars<Str>::char_-(lit('\'') | '"')) >> -(lit('\'') | '"');
- 	HtmlStartTagRule start_tag = no_skip['<' >> +(Chars<Str>::alnum)] >> *(attribute) >> '>';
+  	HtmlStartTagRule start_tag = no_skip['<' >> +(Chars<Str>::alnum)] >> *(attribute) >> '>';
+	HtmlEndTagRule comment = lit("<!--") >> *(Chars<Str>::char_-"-->") >> "-->";
 	HtmlStartTagRule start_end_tag = no_skip['<' >> +(Chars<Str>::alnum)] >> *(attribute) >> lit("/>");
 	HtmlEndTagRule end_tag = no_skip[lit("</") >> +(Chars<Str>::alnum)] >> '>';
 	HtmlEndTagRule text = no_skip[+(Chars<Str>::char_-'<')];
-	HtmlRule html_rule = *(-text[bind(&QueryImpl::handle_text, this, _1)] >> (start_tag[bind(&QueryImpl::handle_start_tag, this, _1)] | end_tag[bind(&QueryImpl::handle_end_tag, this, _1)] | start_end_tag[bind(&QueryImpl::handle_start_end_tag, this, _1)]));
+	HtmlRule html_rule = *(-text[bind(&QueryImpl::handle_text, this, _1)] >> (start_tag[bind(&QueryImpl::handle_start_tag, this, _1)] | end_tag[bind(&QueryImpl::handle_end_tag, this, _1)] | start_end_tag[bind(&QueryImpl::handle_start_end_tag, this, _1)]) | comment[bind(&QueryImpl::handle_comment, this)]);
 
 	typename Str::const_iterator begin = html.begin(), end = html.end();
 	qi::phrase_parse(begin, end, html_rule, Chars<Str>::space);
@@ -150,6 +151,11 @@ void QueryImpl<Str>::handle_text(const Str &text){
 	//std::cout << "TEXT";// << text << std::endl;
 	if(open_tags.size())
 		open_tags.top()->append_text(text);
+}
+
+template<typename Str>
+void QueryImpl<Str>::handle_comment(){
+	wcout << L"COMMENT" << endl;
 }
 
 template<typename Str>
