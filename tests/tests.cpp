@@ -50,57 +50,57 @@ class OpenTagsCase : public CppQueryTest{
 };
 
 TEST_F(SimpleCase, Selectors){
-// 	//should return 5 because one paragraph is inside comment
- 	EXPECT_EQ(5, cq(L"p").size());
- 	EXPECT_EQ(5, cq(L"P").size());
-// 	
-// 	//:contains
-// 	EXPECT_STREQ("Lorem ipsum dolor ...", cq(":contains(dolor)").text().c_str());
-// 	EXPECT_EQ(2, cq(":contains(\"androids)").size());
-// 	EXPECT_EQ(1, cq("p:contains(\"androids)").size());
-// 	EXPECT_STREQ("Do \"androids dream ...", cq("p:contains(\"androids").text().c_str());
-// 
-// 	//:has()
-// 	EXPECT_STREQ("second", cq("div:has(h1)")["id"].c_str());
-// 
-// 	// descendant selector
-// 	EXPECT_EQ(3, cq("#second p").size());
-// 	
-// 	/* there is html like that:
-// 	<div id="second">
-// 	<div id="third"></div></div>
-// 
-// 	cq("#second div")["id"] <-- This code should not return "second", should return "third"
-// 	*/
-// 	EXPECT_STREQ("third", cq("#second div")["id"].c_str());
-// 	
-// 	// ">" selector
-// 	EXPECT_EQ(2, cq("body > div").size());
-// 	EXPECT_EQ(3, cq("body >").size());
-// 
-// 	//the same problem as with descendant selector
-// 	EXPECT_STREQ("third", cq("#second > div")["id"].c_str());
-// 
-// 	//attribute equals selector [name=value]
-// 	EXPECT_STREQ("chbox", cq("[name=team]")["id"].c_str());
-// 
-// 	//:not() selector
-// 	EXPECT_EQ(3, cq("p:not(.some)").size());
-// 	EXPECT_STREQ("Lorem ipsum dolor ...", cq("p:not(.some)")[0].text().c_str());
-// 
-// 	//more complex examples:
-// 	EXPECT_EQ(1, cq("div:has(p:has(b))").size());
-// 	EXPECT_STREQ("first", cq("div:has(p:has(b))")["id"].c_str());
-// 	EXPECT_EQ(0, cq("div:has(p:has(u))").size());
-// 
-// 
-// 	//utf-8
-// 	CppQuery::Query<std::wstring> cq(std::wstring(html));
-// 	EXPECT_STREQ(L"zaÅ¼Ã³ÅÄ", cq(L"#find-me").text().c_str()); //checks if deals with: <h3   id="find-me"  >zaÅ¼Ã³ÅÄ/h3   >
-// 	EXPECT_EQ(6, cq(L"#find-me").text().size());
-// 	EXPECT_EQ(1, cq(L":contains(zaÅ¼Ã³ÅÄ").size());
-// 	EXPECT_STREQ(L"find-me", cq(L":contains(zaÅ¼Ã³ÅÄ)")[L"id"].c_str());
-// 
+	//should return 5 because one paragraph is inside comment
+	EXPECT_EQ(5, cq(L"p").size());
+	EXPECT_EQ(5, cq(L"P").size());
+	
+	//:contains
+	EXPECT_STREQ(L"Lorem ipsum dolor ...", cq(L"p:contains(dolor)").text().c_str());
+	//EXPECT_EQ(2, cq(L":contains(\"androids)").size()); //todo: jquery :contains works differently than I assumed
+	EXPECT_EQ(1, cq(L"p:contains(\"androids)").size());
+	EXPECT_STREQ(L"Do \"androids dream ...", cq(L"p:contains(\"androids").text().c_str());
+ 
+	//:has()
+	EXPECT_STREQ(L"second", cq(L"div:has(h1)")[L"id"].c_str());
+ 
+	// descendant selector
+	EXPECT_EQ(3, cq(L"#second p").size());
+	
+	/* there is html like that:
+	<div id="second">
+	<div id="third"></div></div>
+ 
+	cq("#second div")["id"] <-- This code should not return "second", should return "third"
+	*/
+	EXPECT_STREQ(L"third", cq(L"#second div")[L"id"].c_str());
+	
+	// ">" selector
+	EXPECT_EQ(2, cq(L"body > div").size());
+	EXPECT_EQ(3, cq(L"body >").size());
+ 
+	//the same problem as with descendant selector
+	EXPECT_STREQ(L"third", cq(L"#second > div")[L"id"].c_str());
+ 
+	//attribute equals selector [name=value]
+	EXPECT_STREQ(L"chbox", cq(L"[name=team]")[L"id"].c_str());
+ 
+	//:not() selector
+	EXPECT_EQ(3, cq(L"p:not(.some)").size());
+	EXPECT_STREQ(L"Lorem ipsum dolor ...", cq(L"p:not(.some)")[0].text().c_str());
+ 
+	//more complex examples:
+	EXPECT_EQ(1, cq(L"div:has(p:has(b))").size());
+	EXPECT_STREQ(L"first", cq(L"div:has(p:has(b))")[L"id"].c_str());
+	EXPECT_EQ(0, cq(L"div:has(p:has(u))").size());
+
+
+	//utf-8
+	//CppQuery::Query<std::wstring> cq2(std::wstring(html));
+	EXPECT_STREQ(L"zażółć", cq(L"#find-me").text().c_str()); //checks if deals with: <h3   id="find-me"  >zażółć/h3   >
+	EXPECT_EQ(6, cq(L"#find-me").text().size());
+	EXPECT_EQ(1, cq(L":contains(zażółć").size());
+	EXPECT_STREQ(L"find-me", cq(L":contains(zażółć)")[L"id"].c_str());
+ 
 }
 
 TEST_F(SimpleCase, Problematic){
@@ -117,22 +117,25 @@ TEST_F(SimpleCase, Problematic){
 	EXPECT_TRUE(cq(L"#chbox").attr_exists(L"checked"));
 
 	//checks if deals with: <h3 id='no-quote'  class=no-quote>Just another</h3>
-	/*EXPECT_STREQ("no_quote", cq("#no-quote")["class"].c_str());
+	EXPECT_STREQ(L"no_quote", cq(L"#no-quote")[L"class"].c_str());
 
 	//if cq("selector")==1 then: cq("selector")[0] returns cq("selector"):
-	EXPECT_STREQ("special", cq("#first")["class"].c_str());
-	EXPECT_STREQ("special", cq("#first")[0]["class"].c_str());
+	EXPECT_STREQ(L"special", cq(L"#first")[L"class"].c_str());
+	EXPECT_STREQ(L"special", cq(L"#first")[0][L"class"].c_str());
 
 	//copy constructor
-	cq = cq("#first");
-	EXPECT_EQ(2, cq("p").size());
-	CppQuery::Query<std::string> cq2(cq);
-	EXPECT_EQ(2, cq2("p").size());
+	cq = cq(L"#first");
+	EXPECT_EQ(2, cq(L"p").size());
+	CppQuery::Query<std::wstring> cq2(cq);
+	EXPECT_EQ(2, cq2(L"p").size());
+	cq = cq(L"p")[0];
+	EXPECT_EQ(1, cq(L"p").size());
+	EXPECT_EQ(2, cq2(L"p").size());
 
-	CppQuery::Query<std::string> cq3;
+	CppQuery::Query<std::wstring> cq3;
 	//operator = ()
 	cq3 = cq2;
-	EXPECT_EQ(2, cq3("p").size());*/
+	EXPECT_EQ(2, cq3(L"p").size());
 
 }
 
