@@ -107,17 +107,17 @@ TEST_F(SimpleCase, Problematic){
 	//checks if deals with: <p class="some">Second <b>paragraph</b> ...</p>
 	EXPECT_STREQ(L"Second paragraph ...", cq(L"p")[1].text().c_str());
 	
-	/*EXPECT_STREQ("Lorem ipsum dolor ...Second paragraph ...", cq("#first p").text().c_str()); //check how it deals when text() is called on object containing a few nodes (should concatenate)
+	EXPECT_STREQ(L"Lorem ipsum dolor ...Second paragraph ...", cq(L"#first p").text().c_str()); //check how it deals when text() is called on object containing a few nodes (should concatenate)
 	
-	EXPECT_STREQ("class-name", cq("#attr")["class"].c_str()); //checks if deals with: <h3 id="attr" class='class-name'>Another</h3>
+	EXPECT_STREQ(L"class-name", cq(L"#attr")[L"class"].c_str()); //checks if deals with: <h3 id="attr" class='class-name'>Another</h3>
 	
 	//check if deals with: <input type="checkbox" id="chbox" name="team" value="team" checked>Spurs
 	//to distinguish between situations when "checked" is not on attributes list and is on it but empty - use attr_exists()
-	EXPECT_TRUE(cq("#chbox")["checked"].empty());
-	EXPECT_TRUE(cq("#chbox").attr_exists("checked"));
+	EXPECT_TRUE(cq(L"#chbox")[L"checked"].empty());
+	EXPECT_TRUE(cq(L"#chbox").attr_exists(L"checked"));
 
 	//checks if deals with: <h3 id='no-quote'  class=no-quote>Just another</h3>
-	EXPECT_STREQ("no_quote", cq("#no-quote")["class"].c_str());
+	/*EXPECT_STREQ("no_quote", cq("#no-quote")["class"].c_str());
 
 	//if cq("selector")==1 then: cq("selector")[0] returns cq("selector"):
 	EXPECT_STREQ("special", cq("#first")["class"].c_str());

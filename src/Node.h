@@ -42,6 +42,7 @@ namespace CppQuery{
 		//methods for constructing
 		void add_child(NodePtr child){
 			children.push_back(child);
+			texts.push_back(Str());
 			child->add_parent(get_shared_ptr());
 		}
 
@@ -57,8 +58,15 @@ namespace CppQuery{
 		//getters
 		Str get_text(){
 			Str res;
-			for(int i=0; i<children.size(); ++i)
-				res += children[i]->get_text();
+			int child_id = 0;
+			for(int i=0; i<texts.size(); ++i){
+				if(texts[i].size())
+					res += texts[i];
+				else{
+					res += children[child_id]->get_text();
+					child_id++;
+				}
+			}
 			return res;
 		}
 		Str get_attribute(const Str &attribute);
@@ -99,7 +107,8 @@ namespace CppQuery{
 		
 		// it holds text parts.
 		// For: <p>first part <b>something</b> second part</p>
-		// texts[0] = "first part ", texts[1] = " second part"
+		// texts[0] = "first part ", texts[1] = "", texts[2] = " second part"
+		// texts[1] = "" to indicate that child should be enquiried about text
 		std::vector<Str> texts;
 		
 		NodePtr parent;
