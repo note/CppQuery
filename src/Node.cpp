@@ -6,7 +6,9 @@ using namespace std;
 template<typename Str>
 Node<Str>::Node(HtmlStartTagAttr &tag){
 	ptr = NodePtr(this);
-	element_name = fusion::at_c<0>(tag);
+	Str tmp = fusion::at_c<0>(tag);
+	std::transform(tmp.begin(), tmp.end(), tmp.begin(), std::bind2nd(std::ptr_fun(&std::tolower<char>), std::locale("")));
+	element_name = tmp;
 	vector<fusion::vector<Str, Str> > attributes_vector = fusion::at_c<1>(tag);
 	for(int i=0; i<attributes_vector.size(); ++i)
 		attributes [fusion::at_c<0>(attributes_vector[i])] = fusion::at_c<1>(attributes_vector[i]);

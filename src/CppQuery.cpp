@@ -9,15 +9,15 @@ extern template class QueryImpl<wstring>;
 
 template <typename Str>
 Query<Str>::Query(const Str &html){
-	pimpl = new QueryImpl<Str>(html);
+	pimpl = QueryImplPtr(new QueryImpl<Str>(html));
 }
 
 template <typename Str>
-Query<Str>::Query(QueryImpl<Str> * impl) : pimpl(impl){}
+Query<Str>::Query(QueryImplPtr impl) : pimpl(impl){}
 
 template <typename Str>
-Query<Str>::~Query(){
-	delete pimpl;
+void Query<Str>::load(const Str & html){
+	pimpl = QueryImplPtr(new QueryImpl<Str>(html));
 }
 
 template <typename Str>

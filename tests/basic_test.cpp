@@ -36,7 +36,8 @@ int main(){
 	
 	//wcout << q(L"div:has(a)").size() << endl;
 	
-	wcout << q(L"html a").text() << endl;
+	//wcout << q(L"html > a").text() << endl;
+	wcout << q(L"html a")[1].text() << endl;
 	
 // 	CppQuery::Query<std::string> q("<div id='main'><h3 class='sp'>It is header za</h3><p>Lorem ipsum dolor</p><p class='sp'>Second</p></div>");
 // 	std::cout << q("p[class=sp]").text() << std::endl;

@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <locale>
 
 #include <boost/fusion/container/vector.hpp>
 #include <boost/fusion/sequence.hpp>
@@ -55,7 +56,10 @@ namespace CppQuery{
 		
 		//getters
 		Str get_text(){
-			return text;
+			Str res;
+			for(int i=0; i<children.size(); ++i)
+				res += children[i]->get_text();
+			return res;
 		}
 		Str get_attribute(const Str &attribute);
 		Str get_tag_name(){

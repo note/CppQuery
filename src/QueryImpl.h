@@ -1,7 +1,6 @@
 #ifndef CPP_QUERY_IMPL_H
 #define CPP_QUERY_IMPL_H
 
-
 #include <string>
 #include <stack>
 
@@ -12,6 +11,7 @@
 
 #include "using.h"
 #include "Node.h"
+#include "QueryImpl.h"
 
 namespace CppQuery{
 	
@@ -149,6 +149,7 @@ namespace CppQuery{
 	template <typename Str>
 	class QueryImpl{
 		typedef boost::shared_ptr<Node<Str> > NodePtr;
+		typedef boost::shared_ptr<QueryImpl> QueryImplPtr;
 
 		typedef fusion::vector<Str, std::vector<fusion::vector<Str, Str> > > HtmlStartTagAttr; //each start tag consists of tag name and some number of pairs <attribute-name, attribute-value>
 		typedef spirit::qi::rule<typename Str::const_iterator, fusion::vector<Str, Str>(), typename CharsTypes<Str>::space_type> HtmlAttributeRule;
@@ -162,8 +163,8 @@ namespace CppQuery{
 		Str text();
 		Str get_attribute(const Str &attribute);
 		bool attr_exists(const Str &attribute);
-		QueryImpl * get_ith(int index);
-		QueryImpl * select(const Str &selector);
+		QueryImplPtr get_ith(int index);
+		QueryImplPtr select(const Str &selector);
 		//works analogically to select besides of the fact that ignore roots elements when searching
 		QueryImpl * search_inside(const Str &selector);
 		int size(){
@@ -171,7 +172,10 @@ namespace CppQuery{
 		}
 
 		private:
-		QueryImpl(){} // do not use it in client code. Useful when creating an empty object.
+		QueryImpl(){ // do not use it in client code. Useful when creating an empty object.
+			std::vector<NodePtr> v;
+			roots.push(v);
+		} 
 		QueryImpl(std::vector<NodePtr> elements){
 			roots.push(elements);
 		} //do not use it in client code. Useful when creating object in methods select and get_ith

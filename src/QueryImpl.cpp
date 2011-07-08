@@ -58,17 +58,17 @@ bool QueryImpl<Str>::attr_exists(const Str &attribute){
 }
 
 template<typename Str>
-QueryImpl<Str> * QueryImpl<Str>::get_ith(int index){
+boost::shared_ptr<QueryImpl<Str> > QueryImpl<Str>::get_ith(int index){
 	if(index<roots.top().size()){
 		vector<NodePtr> selected(1);
-		selected.push_back(roots.top()[index]);
-		return new QueryImpl(selected);
+		selected[0] = (roots.top()[index]);
+		return QueryImplPtr(new QueryImpl(selected));
 	}else
-		return new QueryImpl();
+		return QueryImplPtr(new QueryImpl());
 }
 
 template<typename Str>
-QueryImpl<Str> * QueryImpl<Str>::select(const Str &selector){
+boost::shared_ptr<QueryImpl<Str> > QueryImpl<Str>::select(const Str &selector){
 	reset();
 	//cout << "HERE" << endl;
 	//tmp_res.top().clear();
@@ -79,13 +79,17 @@ QueryImpl<Str> * QueryImpl<Str>::select(const Str &selector){
 	using spirit::no_skip;
 	using spirit::eps;
 
-using boost::bind;
+	using boost::bind;
 	typedef qi::rule<typename Str::const_iterator, Str, typename CharsTypes<Str>::space_type> BasicSelectorRule;
 	typedef qi::rule<typename Str::const_iterator, fusion::vector<Str, Str>(), typename CharsTypes<Str>::space_type> ParenthesisedOperator;
 	typedef qi::rule<typename Str::const_iterator> Symbol;
 	typedef qi::rule<typename Str::const_iterator, Str()> StdRule;
 	typedef qi::rule<typename Str::const_iterator, fusion::vector<Str, Str>()> AttributeRule;
 	typedef qi::rule<typename Str::const_iterator, qi::unused_type()> UnusedTypeRule;
+	
+	Str sel = selector;
+	transform(sel.begin(), sel.end(), sel.begin(), bind2nd(ptr_fun(&tolower<char>), locale("")));
+	
 	Symbol special_chars = no_skip[lit('.') | '#' | ':'  | '[' | ' ' | '>' | ')'];
 	StdRule selectors;
 	StdRule element = +(Chars<Str>::char_-special_chars);
@@ -99,13 +103,13 @@ using boost::bind;
  	selectors = +(class_[bind(&QueryImpl::handle_class, this, _1)] | id[bind(&QueryImpl::handle_id, this, _1)] | contains[bind(&QueryImpl::handle_contains, this, _1)] | 
  	attr[bind(&QueryImpl::handle_attr, this, _1)] | element[bind(&QueryImpl::handle_element, this, _1)] | lit(" > ")[bind(&QueryImpl::handle_child, this)] |
  	(lit(' '))[bind(&QueryImpl::handle_descendant, this)] | not_ | has_);
- 	typename Str::const_iterator begin = selector.begin(), end = selector.end();
+ 	typename Str::const_iterator begin = sel.begin(), end = sel.end();
 	qi::parse(begin, end, selectors);
 
 
 	QueryImpl * tmp = new QueryImpl(tmp_res.top());
 	tmp_res.pop();
-	return tmp;
+	return QueryImplPtr(tmp);
 }
 
 template<typename Str>
@@ -138,7 +142,7 @@ template<typename Str>
 void QueryImpl<Str>::handle_end_tag(const Str &tag){
 	//std::cout << "End of tag: " << tag << std::endl;
 	if(open_tags.size() > 0) //it always should be bigger than zero. If open_tags.size()==0 and end tags was found it means that html document is incorrect.
-	    open_tags.pop();
+		open_tags.pop();
 }
 
 template<typename Str>

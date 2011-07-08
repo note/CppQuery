@@ -18,7 +18,7 @@ class CppQueryTest : public ::testing::Test{
 		stringstream ss;
 		ss << s.rdbuf();
 		html = ss.str();
-		cq(html);
+		cq.load(html);
 	}
 
 	protected:
@@ -43,8 +43,8 @@ class OpenTagsCase : public CppQueryTest{
 
 TEST_F(SimpleCase, Selectors){
 // 	//should return 5 because one paragraph is inside comment
-// 	EXPECT_EQ(5, cq("p").size());
-// 	EXPECT_EQ(5, cq("P").size());
+ 	EXPECT_EQ(5, cq("p").size());
+ 	EXPECT_EQ(5, cq("P").size());
 // 	
 // 	//:contains
 // 	EXPECT_STREQ("Lorem ipsum dolor ...", cq(":contains(dolor)").text().c_str());
@@ -96,10 +96,10 @@ TEST_F(SimpleCase, Selectors){
 }
 
 TEST_F(SimpleCase, Problematic){
-	//checks if deals with: <p class="some">Next <b>paragraph</b></p>
-	EXPECT_STREQ("Next paragraph", cq("p")[1].text().c_str());
+	//checks if deals with: <p class="some">Second <b>paragraph</b> ...</p>
+	EXPECT_STREQ("Second paragraph ...", cq("p")[1].text().c_str());
 	
-	EXPECT_STREQ("Lorem ipsum dolor ...Second paragraph ...", cq("#first p").text().c_str()); //check how it deals when text() is called on object containing a few nodes (should concatenate)
+	/*EXPECT_STREQ("Lorem ipsum dolor ...Second paragraph ...", cq("#first p").text().c_str()); //check how it deals when text() is called on object containing a few nodes (should concatenate)
 	
 	EXPECT_STREQ("class-name", cq("#attr")["class"].c_str()); //checks if deals with: <h3 id="attr" class='class-name'>Another</h3>
 	
@@ -124,11 +124,11 @@ TEST_F(SimpleCase, Problematic){
 	CppQuery::Query<std::string> cq3;
 	//operator = ()
 	cq3 = cq2;
-	EXPECT_EQ(2, cq3("p").size());
+	EXPECT_EQ(2, cq3("p").size());*/
 
 }
 
-TEST_F(RealCase, Selectors){
+/*TEST_F(RealCase, Selectors){
 	//simple selector and ["attribute"] notation
 	EXPECT_STREQ("homepage", cq("logolink")["alt"].c_str());
 
@@ -170,7 +170,7 @@ TEST_F(OpenTagsCase, OpenTags){
 
 	//checks if deals with: <li>First
 	EXPECT_STREQ("first", cq("li")[0].text().c_str());
-}
+}*/
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
