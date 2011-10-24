@@ -21,7 +21,7 @@ QueryImpl<Str>::QueryImpl(const Str &html){
 	
 	roots.push(vector<NodePtr>());
 
-	HtmlAttributeRule attribute = +(Chars<Str>::char_-(Chars<Str>::char_('=') | '>' | '<')) >> '=' >> -(lit('\'') | '"')  >> *(Chars<Str>::char_-(lit('\'') | '"')) >> -(lit('\'') | '"');
+	HtmlAttributeRule attribute = +(Chars<Str>::char_-(Chars<Str>::char_('=') | '>' | '<' | "/>")) >> (-(lit('=')) >> -(lit('\'') | '"') >> *(Chars<Str>::char_-(lit('\'') | '"' | ">" | "/>")) >> -(lit('\'') | '"'));
   	HtmlStartTagRule start_tag = no_skip['<' >> +(Chars<Str>::alnum)] >> *(attribute) >> '>';
 	HtmlEndTagRule comment = lit("<!--") >> *(Chars<Str>::char_-"-->") >> "-->";
 	HtmlStartTagRule start_end_tag = no_skip['<' >> +(Chars<Str>::alnum)] >> *(attribute) >> lit("/>");

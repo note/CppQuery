@@ -15,7 +15,7 @@
 
 namespace CppQuery{
 	
-	//the only purpose of struct CharsTypes is to define types from proper namespace.
+	//the only purpose of struct CharsTypes is to define types from proper namespace (spirit::ascii or spirit::standard_wide)
 	//types from namespace spirit:ascii for std::string
 	//types from namespace spirit::standard_wide for std::wstring
 	template <typename Str>
@@ -151,7 +151,7 @@ namespace CppQuery{
 		typedef boost::shared_ptr<Node<Str> > NodePtr;
 		typedef boost::shared_ptr<QueryImpl> QueryImplPtr;
 
-		typedef fusion::vector<Str, std::vector<fusion::vector<Str, Str> > > HtmlStartTagAttr; //each start tag consists of tag name and some number of pairs <attribute-name, attribute-value>
+		typedef fusion::vector<Str, std::vector<fusion::vector<Str, Str> > > HtmlStartTagAttr; //each start tag consists of tag name and a number of pairs <attribute-name, attribute-value>
 		typedef spirit::qi::rule<typename Str::const_iterator, fusion::vector<Str, Str>(), typename CharsTypes<Str>::space_type> HtmlAttributeRule;
 		typedef spirit::qi::rule<typename Str::const_iterator, HtmlStartTagAttr(), typename CharsTypes<Str>::space_type> HtmlStartTagRule;
 		typedef spirit::qi::rule<typename Str::const_iterator, Str(), typename CharsTypes<Str>::space_type> HtmlEndTagRule;

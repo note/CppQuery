@@ -3,15 +3,37 @@
 using namespace CppQuery;
 using namespace std;
 
-template<typename Str>
-Node<Str>::Node(HtmlStartTagAttr &tag){
+namespace CppQuery{
+template<>
+Node<string>::Node(HtmlStartTagAttr &tag){
 	ptr = NodePtr(this);
-	Str tmp = fusion::at_c<0>(tag);
+	string tmp = fusion::at_c<0>(tag);	
 	std::transform(tmp.begin(), tmp.end(), tmp.begin(), std::bind2nd(std::ptr_fun(&std::tolower<char>), std::locale("")));
 	element_name = tmp;
-	vector<fusion::vector<Str, Str> > attributes_vector = fusion::at_c<1>(tag);
+	vector<fusion::vector<string, string> > attributes_vector = fusion::at_c<1>(tag);
 	for(int i=0; i<attributes_vector.size(); ++i)
-		attributes [fusion::at_c<0>(attributes_vector[i])] = fusion::at_c<1>(attributes_vector[i]);
+		/*if(attributes_vector.size() == 1)
+			attributes [fusion::at_c<0>(attributes_vector[i])] = string("1"); //making it by specializing constructor sucks (because it's the only line that differs
+		else*/
+			attributes [fusion::at_c<0>(attributes_vector[i])] = fusion::at_c<1>(attributes_vector[i]);
+			
+}
+
+template<>
+Node<wstring>::Node(HtmlStartTagAttr &tag){
+	ptr = NodePtr(this);
+	wstring tmp = fusion::at_c<0>(tag);	
+	std::transform(tmp.begin(), tmp.end(), tmp.begin(), std::bind2nd(std::ptr_fun(&std::tolower<char>), std::locale("")));
+	element_name = tmp;
+	vector<fusion::vector<wstring, wstring> > attributes_vector = fusion::at_c<1>(tag);
+	for(int i=0; i<attributes_vector.size(); ++i){
+		/*if(attributes_vector.size() == 1)
+			attributes [fusion::at_c<0>(attributes_vector[i])] = wstring(L"1");
+		else*/
+			attributes [fusion::at_c<0>(attributes_vector[i])] = fusion::at_c<1>(attributes_vector[i]);
+			wcout << "adding " << fusion::at_c<0>(attributes_vector[i]) << endl;
+	}
+}
 }
 
 template<typename Str>
